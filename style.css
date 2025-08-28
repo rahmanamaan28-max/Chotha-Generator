@@ -1,65 +1,198 @@
-body {
-    font-family: monospace; /* Monospace ensures consistent character width for alignment */
-    background-color: #f5f5f5;
-    padding: 20px;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Courier New', monospace;
 }
 
-.input-section {
-    margin-bottom: 2rem;
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    color: #2c3e50;
+    line-height: 1.6;
+    padding: 20px;
+    min-height: 100vh;
 }
-#rawNotes {
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+header {
+    background: #2c3e50;
+    color: white;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.app-container {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 20px;
+    gap: 20px;
+}
+
+.input-section, .output-section {
+    flex: 1;
+    min-width: 300px;
+}
+
+h2 {
+    margin-bottom: 1rem;
+    color: #2c3e50;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #3498db;
+}
+
+textarea {
     width: 100%;
     height: 200px;
-    padding: 10px;
-    font-family: inherit;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 15px;
+    resize: vertical;
 }
 
-/* The Chotha Grid Container */
-.chotha-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Creates a 2-column grid */
-    gap: 5px; /* Minimal gap between boxes */
-    width: 180mm; /* Palm-sized sheet width */
-    height: 180mm; /* Palm-sized sheet height */
-    background-color: white;
-    padding: 5mm;
-    box-sizing: border-box;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    margin: 0 auto;
+.file-input-container {
+    margin-bottom: 15px;
 }
 
-/* Individual Topic Box Style */
+.file-input-label {
+    display: block;
+    padding: 10px 15px;
+    background: #3498db;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.3s;
+}
+
+.file-input-label:hover {
+    background: #2980b9;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+button {
+    background: #2c3e50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+button:hover {
+    background: #1a2530;
+}
+
+.chotha-container {
+    width: 100%;
+    min-height: 400px;
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .chotha-box {
-    border: 1px solid black;
-    padding: 2mm; /* Ultra-compact padding */
-    box-sizing: border-box;
-    overflow: hidden; /* Ensures content stays inside the box */
-    break-inside: avoid; /* Prevents boxes from breaking across pages if printed */
-    /* Dense Writing Settings */
-    font-size: 8px; /* Very small font */
-    line-height: 1; /* Line spacing = 1 */
+    width: 3in;
+    height: 3in;
+    border: 1px solid #2c3e50;
+    padding: 10px;
+    font-size: 9px;
+    line-height: 1.1;
+    overflow: hidden;
+    background: white;
+    margin-bottom: 10px;
+    page-break-inside: avoid;
 }
 
-/* Heading Style as Specified */
 .chotha-heading {
     font-weight: bold;
     text-decoration: underline;
-    display: inline;
-    margin-right: 2px;
-}
-.chotha-heading::after {
-    content: ":"; /* Automatically adds colon after heading */
-}
-
-/* Optional: Style for better visual structure */
-.keyword {
-    font-weight: bold;
-}
-.arrow {
-    margin: 0 2px;
-}
-
-#printBtn {
     display: block;
-    margin: 20px auto;
+    margin-bottom: 5px;
+}
+
+.chotha-heading::after {
+    content: ":";
+}
+
+.output-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.size-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+input[type="range"] {
+    width: 120px;
+}
+
+@media (max-width: 768px) {
+    .app-container {
+        flex-direction: column;
+    }
+    
+    .output-controls {
+        flex-direction: column;
+    }
+    
+    .chotha-box {
+        width: 100%;
+        height: auto;
+        min-height: 3in;
+    }
+}
+
+@media print {
+    body, .container {
+        background: white;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .input-section, .output-controls, header {
+        display: none;
+    }
+    
+    .output-section {
+        width: 100%;
+    }
+    
+    .chotha-container {
+        min-height: auto;
+    }
+    
+    .chotha-box {
+        width: 3in;
+        height: 3in;
+        border: 1px solid #000;
+        page-break-inside: avoid;
+    }
 }
