@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chotha Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Chotha Generator</h1>
+
+        <!-- Input Section -->
+        <div class="input-section">
+            <textarea id="rawNotes" placeholder="Paste your full notes here... (Each new topic should be on a new line or separated by a semicolon)"></textarea>
+            <button onclick="generateChotha()">Generate Chotha</button>
+        </div>
+
+        <!-- Output Section -->
+        <div class="output-section">
+            <div id="chothaContainer" class="chotha-grid">
+                <!-- The generated Chotha will be inserted here by JavaScript -->
+            </div>
+            <button onclick="downloadChotha()" id="downloadBtn" disabled>Download Chotha</button>
+        </div>
+    </div>
+
+    <!-- Optional: Include html2canvas library for download functionality -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
