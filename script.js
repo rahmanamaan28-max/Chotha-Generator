@@ -7,50 +7,20 @@ const downloadBtn = document.getElementById('downloadBtn');
 const printBtn = document.getElementById('printBtn');
 const chothaContainer = document.getElementById('chothaContainer');
 const fontSizeSlider = document.getElementById('fontSize');
+const fontSizeValue = document.getElementById('fontSizeValue');
+const compressionLevel = document.getElementById('compressionLevel');
 const fileStatus = document.getElementById('fileStatus');
-const fileTypeButtons = document.querySelectorAll('.file-type-btn');
-
-// Current file type
-let currentFileType = 'text';
+const boxCount = document.getElementById('boxCount');
+const contentStats = document.getElementById('contentStats');
 
 // Initialize with sample text
 rawNotes.value = "PERCEPTION:\nProcess of interpreting sensations into meaningful patterns. It involves three steps: selection, organization, interpretation. Selection is focusing on certain stimuli. Organization uses Gestalt principles: similarity, proximity, continuity, closure. Interpretation assigns meaning based on past experience.\n\nGESTALT PRINCIPLES:\nLaws of organization. Figure-ground: we separate objects from background. Similarity: similar items are grouped. Proximity: nearby items are grouped. Continuity: we see continuous patterns. Closure: we fill in gaps to see complete objects.";
 
-// Set up file type buttons
-fileTypeButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        fileTypeButtons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-        currentFileType = button.dataset.type;
-        updateFileInputAccept();
-    });
+// Update font size value display
+fontSizeSlider.addEventListener('input', function() {
+    fontSizeValue.textContent = `${this.value}px`;
+    adjustFontSize(this.value);
 });
-
-// Update file input accept attribute based on selected file type
-function updateFileInputAccept() {
-    switch(currentFileType) {
-        case 'text':
-            fileInput.accept = '.txt,.text';
-            fileStatus.textContent = 'Select a text file to begin';
-            break;
-        case 'pdf':
-            fileInput.accept = '.pdf';
-            fileStatus.textContent = 'Select a PDF file (note: text extraction may vary)';
-            break;
-        case 'doc':
-            fileInput.accept = '.doc,.docx';
-            fileStatus.textContent = 'Select a Word document (note: text extraction may vary)';
-            break;
-        case 'ppt':
-            fileInput.accept = '.ppt,.pptx';
-            fileStatus.textContent = 'Select a PowerPoint file (note: text extraction may vary)';
-            break;
-        case 'excel':
-            fileInput.accept = '.xls,.xlsx';
-            fileStatus.textContent = 'Select an Excel file (note: text extraction may vary)';
-            break;
-    }
-}
 
 // Load document from file input
 fileInput.addEventListener('change', function(e) {
@@ -61,13 +31,12 @@ fileInput.addEventListener('change', function(e) {
     fileStatus.textContent = `Processing ${file.name}...`;
     fileStatus.className = 'status-message status-info';
     
-    // Handle different file types
-    if (currentFileType === 'text') {
+    // Handle text files
+    if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
         handleTextFile(file);
     } else {
-        // For other file types, we would normally need server-side processing
-        // This is a simulation for demonstration purposes
-        simulateFileProcessing(file);
+        fileStatus.textContent = 'Please upload a text file (.txt)';
+        fileStatus.className = 'status-message status-error';
     }
 });
 
@@ -77,41 +46,13 @@ function handleTextFile(file) {
     reader.onload = function(e) {
         rawNotes.value = e.target.result;
         fileStatus.textContent = `${file.name} loaded successfully`;
-        fileStatus.className = 'status-message status-info';
+        fileStatus.className = 'status-message status-success';
     };
     reader.onerror = function() {
         fileStatus.textContent = 'Error reading file';
         fileStatus.className = 'status-message status-error';
     };
     reader.readAsText(file);
-}
-
-// Simulate processing for other file types
-function simulateFileProcessing(file) {
-    // In a real application, this would be done with proper libraries or server-side processing
-    setTimeout(() => {
-        // Sample content based on file type
-        let sampleContent = "";
-        
-        switch(currentFileType) {
-            case 'pdf':
-                sampleContent = "PDF Content: Perception is the process of interpreting sensations. It involves selection, organization, and interpretation of sensory input. Gestalt principles explain how we organize visual information.";
-                break;
-            case 'doc':
-                sampleContent = "Word Document: This is a simulation of content from a Word document. Perception involves processing sensory information. Key concepts include bottom-up and top-down processing.";
-                break;
-            case 'ppt':
-                sampleContent = "PowerPoint Slides: Slide 1: Introduction to Perception. Slide 2: Sensory receptors receive stimuli. Slide 3: Brain interprets signals. Slide 4: Gestalt principles of organization.";
-                break;
-            case 'excel':
-                sampleContent = "Excel Data: Concept, Definition, Example. Perception, Interpretation of sensations, Recognizing a face. Sensation, Raw data from senses, Light entering eye.";
-                break;
-        }
-        
-        rawNotes.value = `[Simulated content from ${file.name}]\n\n${sampleContent}`;
-        fileStatus.textContent = `Simulated content loaded from ${file.name} (real content would require server processing)`;
-        fileStatus.className = 'status-message status-info';
-    }, 1500);
 }
 
 // Generate Chotha
@@ -161,6 +102,8 @@ generateBtn.addEventListener('click', function() {
         topics.push({ topic: 'Notes', content: text });
     }
     
+    let totalChars = 0;
+    
     // Process each topic
     topics.forEach(item => {
         const box = document.createElement('div');
@@ -176,19 +119,29 @@ generateBtn.addEventListener('click', function() {
         headingSpan.textContent = item.topic;
         box.appendChild(headingSpan);
         
-        // Process content
-        const processedContent = processContent(item.content);
+        // Process content based on compression level
+        const processedContent = processContent(item.content, compressionLevel.value);
+        totalChars += processedContent.length;
+        
         const contentSpan = document.createElement('span');
+        contentSpan.classList.add('chotha-content');
         contentSpan.innerHTML = processedContent;
         box.appendChild(contentSpan);
         
         // Add to container
         chothaContainer.appendChild(box);
     });
+    
+    // Update stats
+    boxCount.textContent = `${topics.length} boxes`;
+    contentStats.textContent = `${totalChars} characters`;
 });
 
-// Process content to make it compact
-function processContent(text) {
+// Process content to make it ultra-compact
+function processContent(text, level) {
+    // Remove extra spaces and line breaks
+    let processedText = text.replace(/\s+/g, ' ').trim();
+    
     // Apply short forms and replacements
     const replacements = {
         'important': 'Imp.',
@@ -197,21 +150,45 @@ function processContent(text) {
         'example': 'Eg.',
         'increase': '↑',
         'decrease': '↓',
-        ' leads to ': ' → ',
-        ' results in ': ' → ',
-        ' therefore ': ' ∴ ',
-        ' because ': ' ∵ ',
+        ' leads to ': '→',
+        ' results in ': '→',
+        ' therefore ': '∴',
+        ' because ': '∵',
         ' and ': ' & ',
         ' with ': ' w/ ',
         ' without ': ' w/o ',
+        ' approximately ': '≈',
+        ' equals ': '=',
+        ' not equal ': '≠',
+        ' greater than ': '>',
+        ' less than ': '<',
+        ' plus ': '+',
+        ' minus ': '-',
+        ' divided by ': '÷',
+        ' multiplied by ': '×',
     };
-    
-    let processedText = text;
     
     // Apply replacements
     for (const [key, value] of Object.entries(replacements)) {
         const regex = new RegExp(key, 'gi');
         processedText = processedText.replace(regex, value);
+    }
+    
+    // Apply compression based on level
+    if (level === 'high' || level === 'extreme') {
+        // Remove articles and some pronouns
+        processedText = processedText.replace(/\b(the|a|an|is|are|was|were|be|being|been)\b/gi, '');
+        
+        // Remove unnecessary words
+        processedText = processedText.replace(/\b(this|that|these|those|which|who|whom|whose)\b/gi, '');
+    }
+    
+    if (level === 'extreme') {
+        // Remove vowels from longer words (but keep first letter)
+        processedText = processedText.replace(/\b([bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ]{3,})[aeiouAEIOU]+([bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ]*)\b/g, '$1$2');
+        
+        // Shorten common suffixes
+        processedText = processedText.replace(/(ing|ed|tion|sion|ment|ity|able|ible|al|ive|ous|ful|less|ness|ship|hood|dom|ism|ist|ance|ence|ery|ory)\b/gi, '');
     }
     
     // Add line breaks for natural breaks
@@ -220,17 +197,19 @@ function processContent(text) {
     processedText = processedText.replace(/\? /g, '?<br>');
     processedText = processedText.replace(/; /g, ';<br>');
     
+    // Highlight keywords
+    processedText = processedText.replace(/\b([A-Z][a-z]+|[0-9]+%?|↑|↓|→|∴|∵|≈|=|≠|>|<|\+|-|÷|×)\b/g, '<span class="chotha-keyword">$1</span>');
+    
     return processedText;
 }
 
 // Adjust font size
-fontSizeSlider.addEventListener('input', function() {
-    const size = this.value;
+function adjustFontSize(size) {
     const boxes = document.querySelectorAll('.chotha-box');
     boxes.forEach(box => {
         box.style.fontSize = `${size}px`;
     });
-});
+}
 
 // Clear all
 clearBtn.addEventListener('click', function() {
@@ -239,6 +218,8 @@ clearBtn.addEventListener('click', function() {
     fileInput.value = '';
     fileStatus.textContent = 'Select a file to begin';
     fileStatus.className = 'status-message status-info';
+    boxCount.textContent = '0 boxes';
+    contentStats.textContent = '0 characters';
     
     // Add a default empty box
     const box = document.createElement('div');
@@ -249,7 +230,34 @@ clearBtn.addEventListener('click', function() {
 
 // Download Chotha
 downloadBtn.addEventListener('click', function() {
-    alert("Download functionality would be implemented here. In a full implementation, this would use the html2canvas library to convert the Chotha to an image.");
+    // Create a printable version
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Chotha - Printable Version</title>
+            <style>
+                body { font-family: Courier New, monospace; padding: 10px; font-size: 8px; line-height: 1; }
+                .chotha-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+                .chotha-box { width: 3in; height: 3in; border: 1px solid #000; padding: 5px; page-break-inside: avoid; }
+                .chotha-heading { font-weight: bold; text-decoration: underline; display: block; margin-bottom: 3px; }
+                .chotha-heading::after { content: ":"; }
+                .chotha-keyword { font-weight: bold; }
+                @media print { body { margin: 0; padding: 0; } }
+            </style>
+        </head>
+        <body>
+            <div class="chotha-container">
+                ${chothaContainer.innerHTML}
+            </div>
+            <script>
+                window.onload = function() { window.print(); }
+            <\/script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
 });
 
 // Print Chotha
