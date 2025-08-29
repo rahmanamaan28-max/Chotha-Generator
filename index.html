@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chotha Generator - Document Upload</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .upload-section, .content-section, .preview-section {
+            padding: 2rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+
+        .file-input-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 20px 30px;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .upload-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        .supported-formats {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-list {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #bdc3c7;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .file-name {
+            font-weight: 500;
+        }
+
+        .file-size {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .status-message {
+            padding: 15px;
+            margin: 1rem 0;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .status-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-processing {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .process-button {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+        }
+
+        .process-button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .process-button:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        #generateChothaBtn {
+            background: #e74c3c;
+            color: white;
+        }
+
+        #clearAllBtn {
+            background: #95a5a6;
+            color: white;
+        }
+
+        #downloadTextBtn {
+            background: #9b59b6;
+            color: white;
+        }
+
+        #downloadChothaBtn {
+            background: #f39c12;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        #extractedContent {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .chotha-preview {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            min-height: 200px;
+            border: 2px dashed #3498db;
+            white-space: pre-line;
+        }
+
+        .chotha-content {
+            line-height: 1.6;
+        }
+
+        .chotha-heading {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #3498db;
+            padding-bottom: 3px;
+        }
+
+        .chotha-keyword {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .chotha-list {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        .option-group {
+            margin: 15px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .option-item label {
+            margin-left: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            header {
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .upload-section, .content-section, .preview-section {
+                padding: 1.5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                margin: 5px 0;
+            }
+            
+            .option-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+    <!-- Add required libraries for document processing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.17/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Chotha Generator</h1>
+            <p>Upload documents to create ultra-compact revision sheets</p>
+        </header>
+        
+        <div class="upload-section">
+            <h2>Upload Documents</h2>
+            
+            <div class="file-input-container">
+                <label for="fileInput" class="file-input-label">
+                    <span class="upload-icon">📁</span>
+                    Select Files (PDF, Word, Excel, Text)
+                </label>
+                <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx" multiple>
+                <div class="supported-formats">
+                    Supported formats: PDF, Word (.doc, .docx), Excel (.xls, .xlsx), Text (.txt)
+                </div>
+            </div>
+            
+            <div id="fileList" class="file-list"></div>
+            
+            <div id="uploadStatus" class="status-message">
+                Select files to begin processing
+            </div>
+            
+            <button id="processBtn" class="process-button" disabled>
+                Process Documents
+            </button>
+        </div>
+        
+        <div class="content-section">
+            <h2>Extracted Content</h2>
+            <textarea id="extractedContent" readonly placeholder="Content extracted from your documents will appear here..."></textarea>
+            
+            <div class="option-group">
+                <div class="option-item">
+                    <input type="checkbox" id="removeStopwords" checked>
+                    <label for="removeStopwords">Remove common words</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="extractKeywords" checked>
+                    <label for="extractKeywords">Extract keywords</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="summarizeContent" checked>
+                    <label for="summarizeContent">Summarize content</label>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="generateChothaBtn">Generate Chotha</button>
+                <button id="clearAllBtn">Clear All</button>
+                <button id="downloadTextBtn">Download Text</button>
+            </div>
+        </div>
+        
+        <div class="preview-section">
+            <h2>Chotha Preview</h2>
+            <div class="action-buttons">
+                <button id="downloadChothaBtn">Download Chotha</button>
+            </div>
+            <div id="chothaPreview" class="chotha-preview">
+                <p>Chotha content will appear here after processing</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const uploadStatus = document.getElementById('uploadStatus');
+        const processBtn = document.getElementById('processBtn');
+        const extractedContent = document.getElementById('extractedContent');
+        const generateChothaBtn = document.getElementById('generateChothaBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const downloadTextBtn = document.getElementById('downloadTextBtn');
+        const downloadChothaBtn = document.getElementById('downloadChothaBtn');
+        const chothaPreview = document.getElementById('chothaPreview');
+        const removeStopwords = document.getElementById('removeStopwords');
+        const extractKeywords = document.getElementById('extractKeywords');
+        const summarizeContent = document.getElementById('summarizeContent');
+
+        // Store uploaded files and their content
+        let uploadedFiles = [];
+        let extractedText = '';
+        let chothaContent = '';
+
+        // Initialize PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+        // Common stopwords to remove
+        const stopwords = new Set([
+            'a', 'an', 'and', 'are', 'as', 'at', 'be', 'but', 'by', 'for', 'if', 'in', 
+            'into', 'is', 'it', 'no', 'not', 'of', 'on', 'or', 'such', 'that', 'the', 
+            'their', 'then', 'there', 'these', 'they', 'this', 'to', 'was', 'will', 'with'
+        ]);
+
+        // File input change handler
+        fileInput.addEventListener('change', handleFileSelection);
+
+        // Process button click handler
+        processBtn.addEventListener('click', processAllFiles);
+
+        // Generate Chotha button click handler
+        generateChothaBtn.addEventListener('click', generateChotha);
+
+        // Clear all button click handler
+        clearAllBtn.addEventListener('click', clearAll);
+
+        // Download text button click handler
+        downloadTextBtn.addEventListener('click', downloadText);
+
+        // Download Chotha button click handler
+        downloadChothaBtn.addEventListener('click', downloadChotha);
+
+        // Handle file selection
+        function handleFileSelection(event) {
+            const files = Array.from(event.target.files);
+            if (files.length === 0) return;
+            
+            uploadedFiles = files;
+            updateFileList();
+            updateUploadStatus('ready');
+        }
+
+        // Update file list display
+        function updateFileList() {
+            fileList.innerHTML = '';
+            
+            uploadedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div>
+                        <span class="file-name">${file.name}</span>
+                        <span class="file-size">(${formatFileSize(file.size)})</span>
+                    </div>
+                    <span class="file-type">${getFileType(file.name)}</span>
+                `;
+                fileList.appendChild(fileItem);
+            });
+            
+            processBtn.disabled = uploadedFiles.length === 0;
+        }
+
+        // Update status message
+        function updateUploadStatus(status, message = '') {
+            uploadStatus.className = 'status-message';
+            
+            switch(status) {
+                case 'ready':
+                    uploadStatus.className += ' status-info';
+                    uploadStatus.innerHTML = `Ready to process ${uploadedFiles.length} file(s)`;
+                    break;
+                case 'processing':
+                    uploadStatus.className += ' status-processing';
+                    uploadStatus.innerHTML = `<span class="loading-spinner"></span> Processing files...`;
+                    break;
+                case 'success':
+                    uploadStatus.className += ' status-success';
+                    uploadStatus.innerHTML = message || 'Files processed successfully!';
+                    break;
+                case 'error':
+                    uploadStatus.className += ' status-error';
+                    uploadStatus.innerHTML = message || 'Error processing files. Please try again.';
+                    break;
+                default:
+                    uploadStatus.innerHTML = 'Select files to begin processing';
+            }
+        }
+
+        // Process all uploaded files
+        async function processAllFiles() {
+            if (uploadedFiles.length === 0) return;
+            
+            updateUploadStatus('processing');
+            extractedText = '';
+            
+            try {
+                for (const file of uploadedFiles) {
+                    const content = await extractContentFromFile(file);
+                    extractedText += `=== ${file.name} ===\n\n${content}\n\n`;
+                }
+                
+                extractedContent.value = extractedText;
+                updateUploadStatus('success', `Successfully processed ${uploadedFiles.length} file(s)`);
+            } catch (error) {
+                console.error('Error processing files:', error);
+                updateUploadStatus('error', `Error: ${error.message}`);
+            }
+        }
+
+        // Extract content from different file types
+        async function extractContentFromFile(file) {
+            const extension = file.name.split('.').pop().toLowerCase();
+            
+            try {
+                switch(extension) {
+                    case 'pdf':
+                        return await extractTextFromPDF(file);
+                    case 'doc':
+                    case 'docx':
+                        return await extractTextFromWord(file);
+                    case 'xls':
+                    case 'xlsx':
+                        return await extractTextFromExcel(file);
+                    case 'txt':
+                        return await extractTextFromTextFile(file);
+                    case 'ppt':
+                    case 'pptx':
+                        return await extractTextFromPowerPoint(file);
+                    default:
+                        throw new Error(`Unsupported file type: ${extension}`);
+                }
+            } catch (error) {
+                throw new Error(`Failed to process ${file.name}: ${error.message}`);
+            }
+        }
+
+        // Extract text from PDF files
+        async function extractTextFromPDF(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async function(event) {
+                    try {
+                        const typedArray = new Uint8Array(event.target.result);
+                        const pdf = await pdfjsLib.getDocument(typedArray).promise;
+                        
+                        let text = '';
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const textContent = await page.getTextContent();
+                            text += textContent.items.map(item => item.str).join(' ') + '\n';
+                        }
+                        
+                        resolve(text);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // Extract text from Word documents
+        async function extractTextFromWord(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async function(event) {
+                    try {
+                        const arrayBuffer = event.target.result;
+                        const result = await mammoth.extractRawText({ arrayBuffer });
+                        resolve(result.value);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // Extract text from Excel files
+        async function extractTextFromExcel(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const data = new Uint8Array(event.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        
+                        let text = '';
+                        workbook.SheetNames.forEach(sheetName => {
+                            const worksheet = workbook.Sheets[sheetName];
+                            text += `Sheet: ${sheetName}\n`;
+                            text += XLSX.utils.sheet_to_csv(worksheet) + '\n\n';
+                        });
+                        
+                        resolve(text);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // Extract text from text files
+        async function extractTextFromTextFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    resolve(event.target.result);
+                };
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
+
+        // Extract text from PowerPoint (basic implementation)
+        async function extractTextFromPowerPoint(file) {
+            // PowerPoint processing is complex in browser - return basic message
+            return "PowerPoint content extraction is limited in browser. For better results, please convert to PDF first.";
+        }
+
+        // Generate Chotha from extracted text
+        function generateChotha() {
+            if (!extractedText.trim()) {
+                alert('Please process documents first!');
+                return;
+            }
+            
+            // Enhanced Chotha generation
+            chothaContent = createEnhancedChotha(extractedText);
+            chothaPreview.innerHTML = `<div class="chotha-content">${chothaContent}</div>`;
+        }
+
+        // Create enhanced compact Chotha content
+        function createEnhancedChotha(text) {
+            let result = '';
+            
+            // Split by files
+            const fileSections = text.split(/=== .+ ===/).filter(section => section.trim().length > 0);
+            
+            fileSections.forEach((section, index) => {
+                const fileName = uploadedFiles[index]?.name || `Document ${index + 1}`;
+                result += `<div class="chotha-heading">${fileName}</div>`;
+                
+                // Remove extra whitespace
+                let cleanText = section.replace(/\s+/g, ' ').trim();
+                
+                // Apply options based on user selection
+                if (removeStopwords.checked) {
+                    cleanText = removeCommonWords(cleanText);
+                }
+                
+                if (extractKeywords.checked) {
+                    const keywords = extractKeyTerms(cleanText);
+                    result += `<div class="chotha-keyword">Key Terms:</div>`;
+                    result += `<div class="chotha-list">${keywords.join(', ')}</div>`;
+                }
+                
+                if (summarizeContent.checked) {
+                    const summary = summarizeText(cleanText);
+                    result += `<div class="chotha-keyword">Summary:</div>`;
+                    result += `<div>${summary}</div>`;
+                } else {
+                    // Just show the first few sentences if not summarizing
+                    const sentences = cleanText.split(/[.!?]+/);
+                    const preview = sentences.slice(0, 3).join('. ') + '.';
+                    result += `<div>${preview}</div>`;
+                }
+                
+                result += '<br>';
+            });
+            
+            return result;
+        }
+
+        // Remove common words from text
+        function removeCommonWords(text) {
+            const words = text.split(' ');
+            return words.filter(word => {
+                const cleanWord = word.toLowerCase().replace(/[^\w]/g, '');
+                return !stopwords.has(cleanWord) && cleanWord.length > 2;
+            }).join(' ');
+        }
+
+        // Extract key terms from text
+        function extractKeyTerms(text) {
+            const words = text.split(' ');
+            const termFrequency = {};
+            
+            // Count word frequency
+            words.forEach(word => {
+                const cleanWord = word.toLowerCase().replace(/[^\w]/g, '');
+                if (cleanWord.length > 4 && !stopwords.has(cleanWord)) {
+                    termFrequency[cleanWord] = (termFrequency[cleanWord] || 0) + 1;
+                }
+            });
+            
+            // Get top 10 terms
+            return Object.entries(termFrequency)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .map(entry => entry[0]);
+        }
+
+        // Summarize text by extracting important sentences
+        function summarizeText(text) {
+            const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+            
+            // Simple algorithm: take the first, middle, and last sentences
+            if (sentences.length <= 3) {
+                return sentences.join('. ') + '.';
+            }
+            
+            const first = sentences[0];
+            const middle = sentences[Math.floor(sentences.length / 2)];
+            const last = sentences[sentences.length - 1];
+            
+            return `${first}. ${middle}. ${last}.`;
+        }
+
+        // Clear all content
+        function clearAll() {
+            fileInput.value = '';
+            uploadedFiles = [];
+            extractedText = '';
+            extractedContent.value = '';
+            fileList.innerHTML = '';
+            chothaPreview.innerHTML = '<p>Chotha content will appear here after processing</p>';
+            updateUploadStatus('default');
+            processBtn.disabled = true;
+        }
+
+        // Download extracted text
+        function downloadText() {
+            if (!extractedText.trim()) {
+                alert('No content to download!');
+                return;
+            }
+            
+            const blob = new Blob([extractedText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'extracted-content.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Download Chotha content
+        function downloadChotha() {
+            if (!chothaContent.trim()) {
+                alert('Please generate Chotha first!');
+                return;
+            }
+            
+            // Create a plain text version by stripping HTML tags
+            const plainText = chothaContent.replace(/<[^>]*>/g, '');
+            
+            const blob = new Blob([plainText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'chotha-revision-sheet.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Utility functions
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function getFileType(filename) {
+            const extension = filename.split('.').pop().toLowerCase();
+            const typeMap = {
+                'pdf': 'PDF Document',
+                'doc': 'Word Document',
+                'docx': 'Word Document',
+                'xls': 'Excel Spreadsheet',
+                'xlsx': 'Excel Spreadsheet',
+                'txt': 'Text File',
+                'ppt': 'PowerPoint',
+                'pptx': 'PowerPoint'
+            };
+            return typeMap[extension] || 'Unknown File Type';
+        }
+
+        // Initialize
+        updateUploadStatus('default');
+    </script>
+</body>
+</html>
