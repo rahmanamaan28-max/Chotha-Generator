@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chotha Generator - Ultra Compact Revision Sheets</title>
+    <title>Chotha Generator - Document Upload</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
         }
         
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             color: #2c3e50;
             line-height: 1.6;
             padding: 20px;
@@ -273,6 +273,12 @@
             border: 1px solid #c3e6cb;
         }
         
+        .status-processing {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
         @media (max-width: 768px) {
             .app-container {
                 flex-direction: column;
@@ -333,6 +339,12 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        .upload-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
     </style>
 </head>
 <body>
@@ -352,6 +364,7 @@
                 <li>Small font size (like handwritten size 3)</li>
                 <li>Grid format with palm-sized boxes</li>
             </ul>
+            <p class="upload-info">Note: For document uploads, only text files (.txt) are supported in this browser version. For PDF, Word, and Excel files, you'll need to set up the server version.</p>
         </div>
         
         <div class="app-container">
@@ -359,7 +372,7 @@
                 <h2>Input Content</h2>
                 
                 <div class="file-input-container">
-                    <label for="fileInput" class="file-input-label">Upload Document</label>
+                    <label for="fileInput" class="file-input-label">Upload Text File</label>
                     <input type="file" id="fileInput" accept=".txt">
                     <div id="fileStatus" class="status-message status-info">Select a text file or paste content below</div>
                 </div>
@@ -580,7 +593,7 @@
                 ' multiplied by ': '×',
             };
             
-            // Apply replacements
+     // Apply replacements
             for (const [key, value] of Object.entries(replacements)) {
                 const regex = new RegExp(key, 'gi');
                 processedText = processedText.replace(regex, value);
@@ -588,7 +601,7 @@
             
             // Apply compression based on level
             if (level === 'high' || level === 'extreme') {
-            // Remove articles and some pronouns
+                // Remove articles and some pronouns
                 processedText = processedText.replace(/\b(the|a|an|is|are|was|were|be|being|been)\b/gi, '');
                 
                 // Remove unnecessary words
