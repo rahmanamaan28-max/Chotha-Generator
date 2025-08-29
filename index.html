@@ -5,17 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chotha Generator - Document Upload</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Add required libraries for document processing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.17/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Upload Documents</h1>
-        <form id="uploadForm" enctype="multipart/form-data">
-            <input type="file" id="fileInput" accept=".txt,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx" multiple>
-            <button type="submit">Upload</button>
-        </form>
-        <div id="preview"></div>
-        <div id="status"></div>
+        <header>
+            <h1>Chotha Generator</h1>
+            <p>Upload documents to create ultra-compact revision sheets</p>
+        </header>
+        
+        <div class="upload-section">
+            <h2>Upload Documents</h2>
+            
+            <div class="file-input-container">
+                <label for="fileInput" class="file-input-label">
+                    <span class="upload-icon">📁</span>
+                    Select Files (PDF, Word, Excel, Text)
+                </label>
+                <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx" multiple>
+                <div class="supported-formats">
+                    Supported formats: PDF, Word (.doc, .docx), Excel (.xls, .xlsx), Text (.txt)
+                </div>
+            </div>
+            
+            <div id="fileList" class="file-list"></div>
+            
+            <div id="uploadStatus" class="status-message">
+                Select files to begin processing
+            </div>
+            
+            <button id="processBtn" class="process-button" disabled>
+                Process Documents
+            </button>
+        </div>
+        
+        <div class="content-section">
+            <h2>Extracted Content</h2>
+            <textarea id="extractedContent" readonly placeholder="Content extracted from your documents will appear here..."></textarea>
+            
+            <div class="action-buttons">
+                <button id="generateChothaBtn">Generate Chotha</button>
+                <button id="clearAllBtn">Clear All</button>
+                <button id="downloadTextBtn">Download Text</button>
+            </div>
+        </div>
+        
+        <div class="preview-section">
+            <h2>Chotha Preview</h2>
+            <div id="chothaPreview" class="chotha-preview">
+                <p>Chotha content will appear here after processing</p>
+            </div>
+        </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
