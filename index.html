@@ -3,83 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chotha Generator - Ultra Compact Revision Sheets</title>
+    <title>Chotha Generator - Document Upload</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Chotha Generator</h1>
-            <p>Create ultra-compact revision sheets for exam preparation</p>
-        </header>
-        
-        <div class="instructions">
-            <h3>Chotha Format Rules:</h3>
-            <ul>
-                <li>Complete coverage - no points skipped</li>
-                <li>Ultra-compact writing with short forms & symbols</li>
-                <li>Headings underlined with colon</li>
-                <li>No bullets, no extra spaces, line spacing = 1</li>
-                <li>Small font size (like handwritten size 3)</li>
-                <li>Grid format with palm-sized boxes</li>
-            </ul>
-        </div>
-        
-        <div class="app-container">
-            <div class="input-section">
-                <h2>Input Content</h2>
-                
-                <div class="file-input-container">
-                    <label for="fileInput" class="file-input-label">Upload Document</label>
-                    <input type="file" id="fileInput" accept=".txt">
-                    <div id="fileStatus" class="status-message status-info">Select a text file or paste content below</div>
-                </div>
-                
-                <textarea id="rawNotes" placeholder="Paste your full notes here... Each new topic should be on a new line or separated by a semicolon (;)"></textarea>
-                
-                <div class="compression-controls">
-                    <div class="size-control">
-                        <label for="fontSize">Font Size:</label>
-                        <input type="range" id="fontSize" min="6" max="10" value="8">
-                        <span id="fontSizeValue">8px</span>
-                    </div>
-                    
-                    <div class="compression-level">
-                        <label for="compressionLevel">Compression Level:</label>
-                        <select id="compressionLevel">
-                            <option value="normal">Normal</option>
-                            <option value="high">High</option>
-                            <option value="extreme">Extreme</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <button id="generateBtn">Generate Chotha</button>
-                <button id="clearBtn">Clear All</button>
-            </div>
-            
-            <div class="output-section">
-                <h2>Chotha Output</h2>
-                <div class="output-info">
-                    <span id="boxCount">0 boxes</span>
-                    <span id="contentStats">0 characters</span>
-                </div>
-                
-                <div id="chothaContainer" class="chotha-container">
-                    <div class="chotha-box">
-                        <span class="chotha-heading">Sample Topic</span>
-                        <span>Your generated content will appear here in ultra-compact format</span>
-                    </div>
-                </div>
-                
-                <div class="output-controls">
-                    <button id="downloadBtn">Download Chotha</button>
-                    <button id="printBtn">Print Chotha</button>
-                </div>
-            </div>
-        </div>
+        <h1>Upload Documents</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="fileInput" accept=".txt,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx" multiple>
+            <button type="submit">Upload</button>
+        </form>
+        <div id="preview"></div>
+        <div id="status"></div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
