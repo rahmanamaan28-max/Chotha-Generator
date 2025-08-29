@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chotha Generator - Document Upload</title>
+    <title>Chotha Generator - Ultra Compact Notes</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             color: #333;
             line-height: 1.6;
             padding: 20px;
@@ -32,60 +32,86 @@
         header {
             background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
             color: white;
-            padding: 2rem;
+            padding: 1.5rem;
             text-align: center;
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             margin-bottom: 0.5rem;
             font-weight: 700;
         }
 
-        .upload-section, .content-section, .preview-section {
-            padding: 2rem;
-            border-bottom: 1px solid #eee;
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 1.5rem;
+        }
+
+        .left-panel {
+            flex: 1;
+            min-width: 300px;
+            padding: 1rem;
+        }
+
+        .right-panel {
+            flex: 2;
+            min-width: 400px;
+            padding: 1rem;
+        }
+
+        .panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
         }
 
         h2 {
             color: #2c3e50;
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
+            margin-bottom: 1.2rem;
+            font-size: 1.4rem;
             border-left: 4px solid #3498db;
-            padding-left: 15px;
+            padding-left: 12px;
         }
 
         .file-input-container {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .file-input-label {
             display: inline-block;
-            padding: 20px 30px;
+            padding: 16px 24px;
             background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
             color: white;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
-            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
         }
 
         .file-input-label:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+            box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
         }
 
         .upload-icon {
-            font-size: 1.5rem;
-            margin-right: 10px;
+            font-size: 1.3rem;
+            margin-right: 8px;
         }
 
         .supported-formats {
             margin-top: 10px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #7f8c8d;
         }
 
@@ -94,22 +120,25 @@
         }
 
         .file-list {
-            margin: 1.5rem 0;
-            padding: 1rem;
-            background: #f8f9fa;
+            margin: 1.2rem 0;
+            padding: 0.8rem;
+            background: #e9ecef;
             border-radius: 8px;
             border: 2px dashed #bdc3c7;
+            max-height: 200px;
+            overflow-y: auto;
         }
 
         .file-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
-            margin: 8px 0;
+            padding: 8px;
+            margin: 6px 0;
             background: white;
             border-radius: 6px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-size: 0.9rem;
         }
 
         .file-name {
@@ -118,15 +147,16 @@
 
         .file-size {
             color: #7f8c8d;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
 
         .status-message {
-            padding: 15px;
+            padding: 12px;
             margin: 1rem 0;
             border-radius: 8px;
             text-align: center;
             font-weight: 500;
+            font-size: 0.9rem;
         }
 
         .status-info {
@@ -154,22 +184,22 @@
         }
 
         button {
-            padding: 12px 24px;
+            padding: 10px 18px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 600;
             transition: all 0.3s ease;
-            margin: 5px;
+            margin: 4px;
         }
 
         .process-button {
             background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
             color: white;
             width: 100%;
-            padding: 15px;
-            font-size: 1.1rem;
+            padding: 12px;
+            font-size: 1rem;
         }
 
         .process-button:disabled {
@@ -179,12 +209,12 @@
 
         .process-button:not(:disabled):hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.4);
         }
 
         .action-buttons {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-top: 1rem;
             flex-wrap: wrap;
         }
@@ -216,36 +246,48 @@
 
         #extractedContent {
             width: 100%;
-            height: 200px;
-            padding: 15px;
+            height: 180px;
+            padding: 12px;
             border: 2px solid #bdc3c7;
             border-radius: 8px;
             resize: vertical;
             font-family: 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.5;
+            font-size: 13px;
+            line-height: 1.4;
         }
 
         .chotha-preview {
-            padding: 20px;
-            background: #f8f9fa;
+            padding: 15px;
+            background: #fff;
             border-radius: 8px;
-            min-height: 200px;
+            min-height: 400px;
             border: 2px dashed #3498db;
-            white-space: pre-line;
+            overflow: auto;
+            font-size: 10px;
+            line-height: 1;
         }
 
         .chotha-content {
-            line-height: 1.6;
+            line-height: 1;
+            font-size: 10px;
         }
 
         .chotha-heading {
             font-weight: bold;
             color: #2c3e50;
-            margin-top: 15px;
-            margin-bottom: 5px;
+            margin-top: 8px;
+            margin-bottom: 4px;
             border-bottom: 1px solid #3498db;
-            padding-bottom: 3px;
+            padding-bottom: 2px;
+            font-size: 11px;
+        }
+
+        .chotha-subheading {
+            text-decoration: underline;
+            font-weight: bold;
+            margin-top: 6px;
+            margin-bottom: 3px;
+            font-size: 10px;
         }
 
         .chotha-keyword {
@@ -254,74 +296,54 @@
         }
 
         .chotha-list {
-            margin-left: 20px;
-            margin-bottom: 10px;
+            margin-left: 12px;
+            margin-bottom: 6px;
         }
 
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #ecf0f1;
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 10px 0;
+        .chotha-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+            margin-top: 8px;
         }
 
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
+        .chotha-box {
+            border: 1px solid #ccc;
+            padding: 5px;
+            border-radius: 3px;
+            background: #f9f9f9;
+            font-size: 9px;
+            line-height: 1;
         }
 
         .option-group {
-            margin: 15px 0;
+            margin: 12px 0;
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 12px;
         }
 
         .option-item {
             display: flex;
             align-items: center;
+            font-size: 0.9rem;
         }
 
         .option-item label {
-            margin-left: 8px;
+            margin-left: 6px;
         }
 
         @media (max-width: 768px) {
-            .container {
-                margin: 10px;
-                border-radius: 10px;
+            .main-content {
+                flex-direction: column;
             }
             
-            header {
-                padding: 1.5rem;
+            .left-panel, .right-panel {
+                min-width: 100%;
             }
             
             h1 {
-                font-size: 2rem;
-            }
-            
-            .upload-section, .content-section, .preview-section {
-                padding: 1.5rem;
+                font-size: 1.8rem;
             }
             
             .action-buttons {
@@ -330,85 +352,99 @@
             
             button {
                 width: 100%;
-                margin: 5px 0;
-            }
-            
-            .option-group {
-                flex-direction: column;
-                gap: 10px;
+                margin: 4px 0;
             }
         }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
-    <!-- Add required libraries for document processing -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.17/mammoth.browser.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>Chotha Generator</h1>
-            <p>Upload documents to create ultra-compact revision sheets</p>
+            <p class="subtitle">Create ultra-compact, palm-sized revision sheets</p>
         </header>
         
-        <div class="upload-section">
-            <h2>Upload Documents</h2>
-            
-            <div class="file-input-container">
-                <label for="fileInput" class="file-input-label">
-                    <span class="upload-icon">📁</span>
-                    Select Files (PDF, Word, Excel, Text)
-                </label>
-                <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx" multiple>
-                <div class="supported-formats">
-                    Supported formats: PDF, Word (.doc, .docx), Excel (.xls, .xlsx), Text (.txt)
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="panel">
+                    <h2>Upload Documents</h2>
+                    
+                    <div class="file-input-container">
+                        <label for="fileInput" class="file-input-label">
+                            <span class="upload-icon">📁</span>
+                            Select Files
+                        </label>
+                        <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx" multiple>
+                        <div class="supported-formats">
+                            PDF, Word, Excel, Text, PowerPoint
+                        </div>
+                    </div>
+                    
+                    <div id="fileList" class="file-list"></div>
+                    
+                    <div id="uploadStatus" class="status-message">
+                        Select files to begin processing
+                    </div>
+                    
+                    <button id="processBtn" class="process-button" disabled>
+                        Process Documents
+                    </button>
+                </div>
+                
+                <div class="panel">
+                    <h2>Content Options</h2>
+                    <div class="option-group">
+                        <div class="option-item">
+                            <input type="checkbox" id="removeStopwords" checked>
+                            <label for="removeStopwords">Remove common words</label>
+                        </div>
+                        <div class="option-item">
+                            <input type="checkbox" id="extractKeywords" checked>
+                            <label for="extractKeywords">Extract keywords</label>
+                        </div>
+                        <div class="option-item">
+                            <input type="checkbox" id="summarizeContent" checked>
+                            <label for="summarizeContent">Summarize content</label>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button id="generateChothaBtn">Generate Chotha</button>
+                        <button id="clearAllBtn">Clear All</button>
+                        <button id="downloadTextBtn">Download Text</button>
+                        <button id="downloadChothaBtn">Download Chotha</button>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h2>Extracted Content</h2>
+                    <textarea id="extractedContent" readonly placeholder="Content extracted from your documents will appear here..."></textarea>
                 </div>
             </div>
             
-            <div id="fileList" class="file-list"></div>
-            
-            <div id="uploadStatus" class="status-message">
-                Select files to begin processing
-            </div>
-            
-            <button id="processBtn" class="process-button" disabled>
-                Process Documents
-            </button>
-        </div>
-        
-        <div class="content-section">
-            <h2>Extracted Content</h2>
-            <textarea id="extractedContent" readonly placeholder="Content extracted from your documents will appear here..."></textarea>
-            
-            <div class="option-group">
-                <div class="option-item">
-                    <input type="checkbox" id="removeStopwords" checked>
-                    <label for="removeStopwords">Remove common words</label>
+            <div class="right-panel">
+                <div class="panel">
+                    <h2>Chotha Preview</h2>
+                    <div id="chothaPreview" class="chotha-preview">
+                        <p>Chotha content will appear here after processing. This will be an ultra-compact revision sheet with palm-sized boxes, minimal spacing, and optimized content.</p>
+                    </div>
                 </div>
-                <div class="option-item">
-                    <input type="checkbox" id="extractKeywords" checked>
-                    <label for="extractKeywords">Extract keywords</label>
-                </div>
-                <div class="option-item">
-                    <input type="checkbox" id="summarizeContent" checked>
-                    <label for="summarizeContent">Summarize content</label>
-                </div>
-            </div>
-            
-            <div class="action-buttons">
-                <button id="generateChothaBtn">Generate Chotha</button>
-                <button id="clearAllBtn">Clear All</button>
-                <button id="downloadTextBtn">Download Text</button>
-            </div>
-        </div>
-        
-        <div class="preview-section">
-            <h2>Chotha Preview</h2>
-            <div class="action-buttons">
-                <button id="downloadChothaBtn">Download Chotha</button>
-            </div>
-            <div id="chothaPreview" class="chotha-preview">
-                <p>Chotha content will appear here after processing</p>
             </div>
         </div>
     </div>
@@ -435,13 +471,15 @@
         let chothaContent = '';
 
         // Initialize PDF.js worker
+        pdfjsLib = window['pdfjs-dist/build/pdf'];
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
         // Common stopwords to remove
         const stopwords = new Set([
             'a', 'an', 'and', 'are', 'as', 'at', 'be', 'but', 'by', 'for', 'if', 'in', 
             'into', 'is', 'it', 'no', 'not', 'of', 'on', 'or', 'such', 'that', 'the', 
-            'their', 'then', 'there', 'these', 'they', 'this', 'to', 'was', 'will', 'with'
+            'their', 'then', 'there', 'these', 'they', 'this', 'to', 'was', 'will', 'with',
+            'which', 'what', 'when', 'where', 'who', 'whom', 'why', 'how', 'many', 'much'
         ]);
 
         // File input change handler
@@ -582,7 +620,7 @@
                             text += textContent.items.map(item => item.str).join(' ') + '\n';
                         }
                         
-                        resolve(text);
+  resolve(text);
                     } catch (error) {
                         reject(error);
                     }
@@ -650,7 +688,6 @@
 
         // Extract text from PowerPoint (basic implementation)
         async function extractTextFromPowerPoint(file) {
-            // PowerPoint processing is complex in browser - return basic message
             return "PowerPoint content extraction is limited in browser. For better results, please convert to PDF first.";
         }
 
@@ -661,13 +698,13 @@
                 return;
             }
             
-            // Enhanced Chotha generation
-            chothaContent = createEnhancedChotha(extractedText);
+            // Enhanced Chotha generation following all format rules
+            chothaContent = createFormattedChotha(extractedText);
             chothaPreview.innerHTML = `<div class="chotha-content">${chothaContent}</div>`;
         }
 
-        // Create enhanced compact Chotha content
-        function createEnhancedChotha(text) {
+        // Create formatted Chotha following all rules
+        function createFormattedChotha(text) {
             let result = '';
             
             // Split by files
@@ -687,22 +724,27 @@
                 
                 if (extractKeywords.checked) {
                     const keywords = extractKeyTerms(cleanText);
-                    result += `<div class="chotha-keyword">Key Terms:</div>`;
-                    result += `<div class="chotha-list">${keywords.join(', ')}</div>`;
+                    result += `<div class="chotha-subheading">Key Terms:</div>`;
+                    result += `<div class="chotha-box">${keywords.join(', ')}</div>`;
                 }
                 
                 if (summarizeContent.checked) {
                     const summary = summarizeText(cleanText);
-                    result += `<div class="chotha-keyword">Summary:</div>`;
-                    result += `<div>${summary}</div>`;
-                } else {
-                    // Just show the first few sentences if not summarizing
-                    const sentences = cleanText.split(/[.!?]+/);
-                    const preview = sentences.slice(0, 3).join('. ') + '.';
-                    result += `<div>${preview}</div>`;
+                    result += `<div class="chotha-subheading">Summary:</div>`;
+                    result += `<div class="chotha-box">${summary}</div>`;
                 }
                 
-                result += '<br>';
+                // Add detailed content in grid format
+                result += `<div class="chotha-subheading">Detailed Content:</div>`;
+                result += `<div class="chotha-grid">`;
+                
+                // Create content boxes
+                const sentences = cleanText.split(/[.!?]+/).filter(s => s.trim().length > 10);
+                for (let i = 0; i < Math.min(sentences.length, 6); i++) {
+                    result += `<div class="chotha-box">${sentences[i].substring(0, 80)}.</div>`;
+                }
+                
+                result += `</div><br>`;
             });
             
             return result;
@@ -760,7 +802,7 @@
             extractedText = '';
             extractedContent.value = '';
             fileList.innerHTML = '';
-            chothaPreview.innerHTML = '<p>Chotha content will appear here after processing</p>';
+            chothaPreview.innerHTML = '<p>Chotha content will appear here after processing. This will be an ultra-compact revision sheet with palm-sized boxes, minimal spacing, and optimized content.</p>';
             updateUploadStatus('default');
             processBtn.disabled = true;
         }
