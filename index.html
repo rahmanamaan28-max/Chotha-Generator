@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chotha Generator - Ultra Compact Notes</title>
+    <title>Chotha Generator - OCR Text Extraction</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.0.2/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.1.0/docx.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -186,6 +188,12 @@
             border: 1px solid #ffeaa7;
         }
 
+        .status-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
         button {
             padding: 8px 14px;
             border: none;
@@ -353,6 +361,27 @@
             margin-left: 5px;
         }
 
+        .ocr-progress {
+            margin-top: 10px;
+            width: 100%;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .ocr-progress-bar {
+            height: 10px;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .ocr-status {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            text-align: center;
+        }
+
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
@@ -423,7 +452,7 @@
                         </label>
                         <input type="file" id="fileInput" multiple>
                         <div class="supported-formats">
-                            PDF, Word, Excel, Text, PowerPoint
+                            PDF, Word, Excel, Text, PowerPoint, Images (JPG, PNG)
                         </div>
                     </div>
                     
@@ -432,6 +461,11 @@
                     <div id="uploadStatus" class="status-message">
                         Select files to begin processing
                     </div>
+
+                    <div id="ocrProgress" class="ocr-progress" style="display: none;">
+                        <div id="ocrProgressBar" class="ocr-progress-bar"></div>
+                    </div>
+                    <div id="ocrStatus" class="ocr-status"></div>
                     
                     <button id="processBtn" class="process-button" disabled>
                         Process Documents
@@ -452,6 +486,10 @@
                         <div class="option-item">
                             <input type="checkbox" id="summarizeContent" checked>
                             <label for="summarizeContent">Summarize content</label>
+                        </div>
+                        <div class="option-item">
+                            <input type="checkbox" id="useOCR" checked>
+                            <label for="useOCR">Use OCR when needed</label>
                         </div>
                     </div>
                     
@@ -497,11 +535,18 @@
         const removeStopwords = document.getElementById('removeStopwords');
         const extractKeywords = document.getElementById('extractKeywords');
         const summarizeContent = document.getElementById('summarizeContent');
+        const useOCR = document.getElementById('useOCR');
+        const ocrProgress = document.getElementById('ocrProgress');
+        const ocrProgressBar = document.getElementById('ocrProgressBar');
+        const ocrStatus = document.getElementById('ocrStatus');
 
         // Store uploaded files and their content
         let uploadedFiles = [];
         let extractedText = '';
         let chothaContent = '';
+
+        // Initialize PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
         // Common stopwords to remove
         const stopwords = new Set([
@@ -583,6 +628,10 @@
                     uploadStatus.className += ' status-error';
                     uploadStatus.innerHTML = message || 'Error processing files. Please try again.';
                     break;
+                case 'warning':
+                    uploadStatus.className += ' status-warning';
+                    uploadStatus.innerHTML = message || 'Warning: Some files may not have been fully processed.';
+                    break;
                 default:
                     uploadStatus.innerHTML = 'Select files to begin processing';
             }
@@ -611,6 +660,205 @@
 
         // Extract content from different file types
         async function extractContentFromFile(file) {
+            const extension = file.name.split('.').pop().toLowerCase();
+            
+            try {
+                switch(extension) {
+                    case 'pdf':
+                        return await extractTextFromPDF(file);
+                    case 'doc':
+                    case 'docx':
+                        return await extractTextFromWord(file);
+                    case 'xls':
+                    case 'xlsx':
+                        return await extractTextFromExcel(file);
+                    case 'txt':
+                        return await extractTextFromTextFile(file);
+                    case 'ppt':
+                    case 'pptx':
+                        return await extractTextFromPowerPoint(file);
+                    case 'jpg':
+                    case 'jpeg':
+                    case 'png':
+                    case 'bmp':
+                    case 'tiff':
+                        return await extractTextFromImage(file);
+                    default:
+                        return await extractTextFromTextFile(file);
+                }
+            } catch (error) {
+                throw new Error(`Failed to process ${file.name}: ${error.message}`);
+            }
+        }
+
+        // Extract text from PDF files
+        async function extractTextFromPDF(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async function(event) {
+                    try {
+                        const typedArray = new Uint8Array(event.target.result);
+                        const pdf = await pdfjsLib.getDocument(typedArray).promise;
+                        
+                        let text = '';
+                        let hasText = false;
+                        
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const textContent = await page.getTextContent();
+                            
+                            if (textContent.items.length > 0) {
+                                hasText = true;
+                                text += textContent.items.map(item => item.str).join(' ') + '\n';
+                            }
+                        }
+                        
+                        // If no text was extracted and OCR is enabled, try OCR
+                        if (!hasText && useOCR.checked) {
+                            updateUploadStatus('warning', 'No text found in PDF, trying OCR...');
+                            text = await extractTextFromPDFWithOCR(file);
+                        } else if (!hasText) {
+                            throw new Error('No text content found in PDF. Enable OCR to extract text from scanned documents.');
+                        }
+                        
+                        resolve(text);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // Extract text from PDF using OCR
+        async function extractTextFromPDFWithOCR(file) {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const typedArray = new Uint8Array(await file.arrayBuffer());
+                    const pdf = await pdfjsLib.getDocument(typedArray).promise;
+                    
+                    let fullText = '';
+                    
+                    // Show OCR progress
+                    ocrProgress.style.display = 'block';
+                    ocrStatus.textContent = 'Preparing OCR...';
+                    
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        ocrStatus.textContent = `Processing page ${i} of ${pdf.numPages}...`;
+                        
+                        const page = await pdf.getPage(i);
+                        const viewport = page.getViewport({ scale: 1.5 });
+                        
+                        // Create canvas for rendering PDF page
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        
+                        // Render PDF page to canvas
+                        await page.render({
+                            canvasContext: context,
+                            viewport: viewport
+                        }).promise;
+                        
+                        // Convert canvas to image data for OCR
+                        const imageData = canvas.toDataURL('image/png');
+                        
+                        // Perform OCR on the image
+                        const result = await Tesseract.recognize(
+                            imageData,
+                            'eng',
+                            { 
+                                logger: message => {
+                                    if (message.status === 'recognizing text') {
+                                        const progress = Math.round(message.progress * 100);
+                                        ocrProgressBar.style.width = `${progress}%`;
+                                        ocrStatus.textContent = `Processing page ${i} of ${pdf.numPages}: ${progress}%`;
+                                    }
+                                }
+                            }
+                        );
+                        
+                        fullText += result.data.text + '\n\n';
+                    }
+                    
+                    // Hide OCR progress
+                    ocrProgress.style.display = 'none';
+                    ocrStatus.textContent = '';
+                    
+                    resolve(fullText);
+                } catch (error) {
+                    ocrProgress.style.display = 'none';
+                    reject(error);
+                }
+            });
+        }
+
+        // Extract text from image files using OCR
+        async function extractTextFromImage(file) {
+            if (!useOCR.checked) {
+                throw new Error('OCR is disabled. Enable OCR to extract text from images.');
+            }
+            
+            return new Promise(async (resolve, reject) => {
+                try {
+                    // Show OCR progress
+                    ocrProgress.style.display = 'block';
+                    ocrStatus.textContent = 'Processing image with OCR...';
+                    
+                    const result = await Tesseract.recognize(
+                        file,
+                        'eng',
+                        { 
+                            logger: message => {
+                                if (message.status === 'recognizing text') {
+                                    const progress = Math.round(message.progress * 100);
+                                    ocrProgressBar.style.width = `${progress}%`;
+                                    ocrStatus.textContent = `Processing image: ${progress}%`;
+                                }
+                            }
+                        }
+                    );
+                    
+                    // Hide OCR progress
+                    ocrProgress.style.display = 'none';
+                    ocrStatus.textContent = '';
+                    
+                    resolve(result.data.text);
+                } catch (error) {
+                    ocrProgress.style.display = 'none';
+                    reject(error);
+                }
+            });
+        }
+
+        // Extract text from Word documents
+        async function extractTextFromWord(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    resolve("Word document content extraction would require additional libraries. Please use text files for demonstration.");
+                };
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
+
+        // Extract text from Excel files
+        async function extractTextFromExcel(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    resolve("Excel content extraction would require additional libraries. Please use text files for demonstration.");
+                };
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
+
+        // Extract text from text files
+        async function extractTextFromTextFile(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = function(event) {
@@ -619,6 +867,11 @@
                 reader.onerror = reject;
                 reader.readAsText(file);
             });
+        }
+
+        // Extract text from PowerPoint (basic implementation)
+        async function extractTextFromPowerPoint(file) {
+            return "PowerPoint content extraction would require additional libraries. Please use text files for demonstration.";
         }
 
         // Generate Chotha from extracted text
@@ -702,6 +955,8 @@
             chothaPreview.innerHTML = '<p>Chotha content will appear here after processing. This will be an ultra-compact revision sheet with 4×4 inch boxes, minimal spacing, and optimized content.</p>';
             updateUploadStatus('default');
             processBtn.disabled = true;
+            ocrProgress.style.display = 'none';
+            ocrStatus.textContent = '';
         }
 
         // Download extracted text
@@ -811,7 +1066,12 @@
                 'xlsx': 'Excel Spreadsheet',
                 'txt': 'Text File',
                 'ppt': 'PowerPoint',
-                'pptx': 'PowerPoint'
+                'pptx': 'PowerPoint',
+                'jpg': 'JPEG Image',
+                'jpeg': 'JPEG Image',
+                'png': 'PNG Image',
+                'bmp': 'BMP Image',
+                'tiff': 'TIFF Image'
             };
             return typeMap[extension] || 'Unknown File Type';
         }
