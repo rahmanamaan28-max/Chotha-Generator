@@ -6,6 +6,7 @@
     <title>Chotha Generator - Ultra Compact Notes</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.1.0/docx.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -270,31 +271,50 @@
             min-height: 350px;
             border: 2px dashed #3498db;
             overflow: auto;
-            font-size: 9px;
-            line-height: 1;
         }
 
-        .chotha-content {
-            line-height: 1;
+        .chotha-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(384px, 1fr));
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .chotha-box {
+            width: 384px; /* 4 inches at 96 DPI */
+            height: 384px; /* 4 inches at 96 DPI */
+            border: 1px solid #ccc;
+            padding: 8px;
+            border-radius: 3px;
+            background: #f9f9f9;
             font-size: 9px;
+            line-height: 1;
+            overflow: hidden;
+            break-inside: avoid;
+            page-break-inside: avoid;
         }
 
         .chotha-heading {
             font-weight: bold;
             color: #2c3e50;
-            margin-top: 6px;
-            margin-bottom: 3px;
+            margin-bottom: 5px;
             border-bottom: 1px solid #3498db;
-            padding-bottom: 1px;
+            padding-bottom: 2px;
             font-size: 10px;
+            text-align: center;
         }
 
         .chotha-subheading {
             text-decoration: underline;
             font-weight: bold;
-            margin-top: 5px;
+            margin-top: 4px;
             margin-bottom: 2px;
             font-size: 9px;
+        }
+
+        .chotha-content {
+            margin-bottom: 4px;
+            font-size: 8px;
         }
 
         .chotha-keyword {
@@ -302,25 +322,18 @@
             color: #e74c3c;
         }
 
-        .chotha-list {
-            margin-left: 10px;
-            margin-bottom: 5px;
-        }
-
         .chotha-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 4px;
-            margin-top: 6px;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px;
+            margin-top: 5px;
         }
 
-        .chotha-box {
-            border: 1px solid #ccc;
-            padding: 4px;
-            border-radius: 2px;
-            background: #f9f9f9;
+        .chotha-grid-item {
             font-size: 8px;
-            line-height: 1;
+            padding: 2px;
+            background: #f0f0f0;
+            border-radius: 2px;
         }
 
         .option-group {
@@ -360,6 +373,17 @@
             button {
                 width: 100%;
                 margin: 3px 0;
+            }
+            
+            .chotha-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .chotha-box {
+                width: 100%;
+                max-width: 384px;
+                height: auto;
+                min-height: 384px;
             }
         }
 
@@ -448,9 +472,9 @@
             
             <div class="right-panel">
                 <div class="panel">
-                    <h2>Chotha Preview</h2>
+                    <h2>Chotha Preview <small>(4×4 inch boxes)</small></h2>
                     <div id="chothaPreview" class="chotha-preview">
-                        <p>Chotha content will appear here after processing. This will be an ultra-compact revision sheet with palm-sized boxes, minimal spacing, and optimized content.</p>
+                        <p>Chotha content will appear here after processing. This will be an ultra-compact revision sheet with 4×4 inch boxes, minimal spacing, and optimized content.</p>
                     </div>
                 </div>
             </div>
@@ -587,69 +611,6 @@
 
         // Extract content from different file types
         async function extractContentFromFile(file) {
-            const extension = file.name.split('.').pop().toLowerCase();
-            
-            try {
-                switch(extension) {
-                    case 'pdf':
-                        return await extractTextFromPDF(file);
-                    case 'doc':
-                    case 'docx':
-                        return await extractTextFromWord(file);
-                    case 'xls':
-                    case 'xlsx':
-                        return await extractTextFromExcel(file);
-                    case 'txt':
-                        return await extractTextFromTextFile(file);
-                    case 'ppt':
-                    case 'pptx':
-                        return await extractTextFromPowerPoint(file);
-                    default:
-                        return await extractTextFromTextFile(file);
-                }
-            } catch (error) {
-                throw new Error(`Failed to process ${file.name}: ${error.message}`);
-            }
-        }
-
-        // Extract text from PDF files
-        async function extractTextFromPDF(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    resolve("PDF content extraction would require additional libraries. Please use text files for demonstration.");
-                };
-                reader.onerror = reject;
-                reader.readAsText(file);
-            });
-        }
-
-        // Extract text from Word documents
-        async function extractTextFromWord(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    resolve("Word document content extraction would require additional libraries. Please use text files for demonstration.");
-                };
-                reader.onerror = reject;
-                reader.readAsText(file);
-            });
-        }
-
-        // Extract text from Excel files
-        async function extractTextFromExcel(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    resolve("Excel content extraction would require additional libraries. Please use text files for demonstration.");
-                };
-                reader.onerror = reject;
-                reader.readAsText(file);
-            });
-        }
-
-        // Extract text from text files
-        async function extractTextFromTextFile(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = function(event) {
@@ -658,11 +619,6 @@
                 reader.onerror = reject;
                 reader.readAsText(file);
             });
-        }
-
-        // Extract text from PowerPoint (basic implementation)
-        async function extractTextFromPowerPoint(file) {
-            return "PowerPoint content extraction would require additional libraries. Please use text files for demonstration.";
         }
 
         // Generate Chotha from extracted text
@@ -674,19 +630,18 @@
             
             // Enhanced Chotha generation following all format rules
             chothaContent = createFormattedChotha(extractedText);
-            chothaPreview.innerHTML = `<div class="chotha-content">${chothaContent}</div>`;
+            chothaPreview.innerHTML = chothaContent;
         }
 
         // Create formatted Chotha following all rules
         function createFormattedChotha(text) {
-            let result = '';
+            let result = '<div class="chotha-container">';
             
             // Split by files
             const fileSections = text.split(/=== .+ ===/).filter(section => section.trim().length > 0);
             
             fileSections.forEach((section, index) => {
                 const fileName = uploadedFiles[index]?.name || `Document ${index + 1}`;
-                result += `<div class="chotha-heading">${fileName}</div>`;
                 
                 // Remove extra whitespace
                 let cleanText = section.replace(/\s+/g, ' ').trim();
@@ -696,21 +651,35 @@
                     cleanText = removeCommonWords(cleanText);
                 }
                 
-                // Create content boxes in grid format
-                result += `<div class="chotha-grid">`;
-                
-                // Split text into chunks for each box
+                // Split content into chunks for each box
                 const sentences = cleanText.split(/[.!?]+/).filter(s => s.trim().length > 10);
-                for (let i = 0; i < Math.min(sentences.length, 12); i++) {
-                    if (i % 4 === 0 && i > 0) {
-                        result += `</div><div class="chotha-grid">`;
-                    }
-                    result += `<div class="chotha-box">${sentences[i].substring(0, 80)}.</div>`;
-                }
+                const boxesNeeded = Math.ceil(sentences.length / 8); // Approximately 8 sentences per box
                 
-                result += `</div><br>`;
+                for (let i = 0; i < boxesNeeded; i++) {
+                    result += `<div class="chotha-box">`;
+                    result += `<div class="chotha-heading">${fileName} - Part ${i+1}</div>`;
+                    
+                    // Add content to the box
+                    for (let j = i * 8; j < Math.min((i + 1) * 8, sentences.length); j++) {
+                        result += `<div class="chotha-content">${sentences[j].substring(0, 120)}.</div>`;
+                    }
+                    
+                    // Add example grid for content organization
+                    if (i % 2 === 0) {
+                        result += `<div class="chotha-subheading">Key Concepts:</div>`;
+                        result += `<div class="chotha-grid">`;
+                        result += `<div class="chotha-grid-item">Term 1: Definition</div>`;
+                        result += `<div class="chotha-grid-item">Term 2: Definition</div>`;
+                        result += `<div class="chotha-grid-item">Term 3: Definition</div>`;
+                        result += `<div class="chotha-grid-item">Term 4: Definition</div>`;
+                        result += `</div>`;
+                    }
+                    
+                    result += `</div>`;
+                }
             });
             
+            result += '</div>';
             return result;
         }
 
@@ -730,7 +699,7 @@
             extractedText = '';
             extractedContent.value = '';
             fileList.innerHTML = '';
-            chothaPreview.innerHTML = '<p>Chotha content will appear here after processing. This will be an ultra-compact revision sheet with palm-sized boxes, minimal spacing, and optimized content.</p>';
+            chothaPreview.innerHTML = '<p>Chotha content will appear here after processing. This will be an ultra-compact revision sheet with 4×4 inch boxes, minimal spacing, and optimized content.</p>';
             updateUploadStatus('default');
             processBtn.disabled = true;
         }
@@ -743,66 +712,84 @@
             }
             
             const blob = new Blob([extractedText], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'extracted-content.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            saveAs(blob, 'extracted-content.txt');
         }
 
-        // Download as PDF
+        // Download as PDF using jsPDF 
         function downloadPdf() {
             if (!chothaContent.trim()) {
                 alert('Please generate Chotha first!');
                 return;
             }
             
-            // Create a plain text version by stripping HTML tags
-            const plainText = chothaContent.replace(/<[^>]*>/g, '');
-            
-            // Use jsPDF for PDF generation
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            // Set font size to very small for compactness
+            // Add title
+            doc.setFontSize(16);
+            doc.text('Chotha Revision Sheet', 105, 15, { align: 'center' });
+            
+            // Convert HTML content to plain text for PDF
+            const plainText = chothaContent.replace(/<[^>]*>/g, '');
+            
+            // Set smaller font size for compact content
             doc.setFontSize(8);
             
             // Split text into lines that fit the page width
             const lines = doc.splitTextToSize(plainText, 180);
             
             // Add text to PDF
-            doc.text(lines, 10, 10);
+            let yPosition = 25;
+            const lineHeight = 4;
+            
+            lines.forEach(line => {
+                if (yPosition > 270) { // Check if we need a new page
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                doc.text(line, 10, yPosition);
+                yPosition += lineHeight;
+            });
             
             // Save the PDF
             doc.save('chotha-revision-sheet.pdf');
         }
 
-        // Download as Word document
+        // Download as Word document using docx 
         function downloadWord() {
             if (!chothaContent.trim()) {
                 alert('Please generate Chotha first!');
                 return;
             }
             
-            // Create a plain text version by stripping HTML tags
-            const plainText = chothaContent.replace(/<[^>]*>/g, '');
-            
-            // Create a Word document
-            const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Chotha Revision Sheet</title></head><body>";
-            const footer = "</body></html>";
-            const sourceHTML = header + plainText + footer;
-            
-            const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
-            const fileDownload = document.createElement("a");
-            
-            document.body.appendChild(fileDownload);
-            fileDownload.href = source;
-            fileDownload.download = 'chotha-revision-sheet.doc';
-            fileDownload.click();
-            document.body.removeChild(fileDownload);
+            try {
+                // Create a new document
+                const doc = new docx.Document();
+                
+                // Add title
+                const title = new docx.Paragraph({
+                    text: "Chotha Revision Sheet",
+                    heading: docx.HeadingLevel.HEADING_1,
+                    alignment: docx.AlignmentType.CENTER
+                });
+                doc.addParagraph(title);
+                
+                // Add content
+                const plainText = chothaContent.replace(/<[^>]*>/g, '');
+                const content = new docx.Paragraph({
+                    text: plainText,
+                    alignment: docx.AlignmentType.LEFT
+                });
+                doc.addParagraph(content);
+                
+                // Generate the document
+                docx.Packer.toBlob(doc).then(blob => {
+                    saveAs(blob, "chotha-revision-sheet.docx");
+                });
+            } catch (error) {
+                console.error('Error generating Word document:', error);
+                alert('Error generating Word document. Please try again.');
+            }
         }
 
         // Utility functions
