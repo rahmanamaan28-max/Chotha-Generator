@@ -1,43 +1,64 @@
 const express = require('express');
 const multer = require('multer');
-const mammoth = require('mammoth');
 const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
 const XLSX = require('xlsx');
 const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
-app.post('/upload', upload.array('files'), async (req, res) => {
-    const extractedTexts = [];
-    for (const file of req.files) {
-        const text = await extractTextFromFile(file);
-        extractedTexts.push(text);
-        fs.unlinkSync(file.path); // Clean up
+// Serve static files
+app.use(express.static('public'));
+
+// Process file uploads
+app.post('/upload', upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        const text = await extractTextFromFile(req.file);
+        
+        // Clean up uploaded file
+        fs.unlinkSync(req.file.path);
+        
+        res.json({ text });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-    res.json({ texts: extractedTexts });
 });
 
 async function extractTextFromFile(file) {
-    const ext = file.originalname.split('.').pop().toLowerCase();
+    const extension = path.extname(file.originalname).toLowerCase();
+    
     try {
-        if (ext === 'pdf') {
+        if (extension === '.pdf') {
             const data = await pdfParse(fs.readFileSync(file.path));
             return data.text;
-        } else if (['docx', 'doc'].includes(ext)) {
+        } else if (extension === '.docx' || extension === '.doc') {
             const result = await mammoth.extractRawText({ path: file.path });
             return result.value;
-        } else if (['xlsx', 'xls'].includes(ext)) {
+        } else if (extension === '.xlsx' || extension === '.xls') {
             const workbook = XLSX.readFile(file.path);
-            return workbook.SheetNames.map(sheet => XLSX.utils.sheet_to_csv(workbook.Sheets[sheet])).join('\n');
-        } else if (ext === 'txt') {
+            let text = '';
+            workbook.SheetNames.forEach(sheetName => {
+                const worksheet = workbook.Sheets[sheetName];
+                text += XLSX.utils.sheet_to_csv(worksheet) + '\n\n';
+            });
+            return text;
+        } else if (extension === '.txt') {
             return fs.readFileSync(file.path, 'utf8');
         } else {
-            return 'Unsupported file type';
+            throw new Error('Unsupported file type');
         }
     } catch (error) {
-        return `Error processing file: ${error.message}`;
+        throw new Error(`Failed to process file: ${error.message}`);
     }
 }
 
-app.listen(3000, () => console.log('Server running on port 3000'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
