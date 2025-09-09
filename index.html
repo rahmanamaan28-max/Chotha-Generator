@@ -3,1051 +3,649 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chotha Generator - OCR Text Extraction</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.0.2/tesseract.min.js"></script>
+    <title>Chotha Maker - Create Concise Notes from Documents</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.1.0/docx.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #16a085;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+        
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
+        
         body {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
-            padding: 20px;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
+            padding: 20px;
         }
-
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
-
+        
         header {
-            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
             color: white;
-            padding: 1.2rem;
+            padding: 25px;
             text-align: center;
         }
-
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 0.3rem;
-            font-weight: 700;
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
         }
-
-        .subtitle {
-            font-size: 1rem;
+        
+        header p {
+            font-size: 1.1rem;
             opacity: 0.9;
         }
-
-        .main-content {
+        
+        .workflow-steps {
             display: flex;
-            flex-wrap: wrap;
-            padding: 1.2rem;
+            justify-content: space-between;
+            padding: 15px 30px;
+            background-color: var(--light-color);
+            border-bottom: 1px solid #ddd;
         }
-
-        .left-panel {
-            flex: 1;
-            min-width: 300px;
-            padding: 0.8rem;
-        }
-
-        .right-panel {
-            flex: 2;
-            min-width: 400px;
-            padding: 0.8rem;
-        }
-
-        .panel {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 1.2rem;
-            margin-bottom: 1.2rem;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        h2 {
-            color: #2c3e50;
-            margin-bottom: 1rem;
-            font-size: 1.2rem;
-            border-left: 4px solid #3498db;
-            padding-left: 10px;
-        }
-
-        .file-input-container {
+        
+        .step {
             text-align: center;
-            margin-bottom: 1.2rem;
+            flex: 1;
+            padding: 10px;
+            position: relative;
         }
-
-        .file-input-label {
+        
+        .step-number {
             display: inline-block;
-            padding: 14px 20px;
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            width: 30px;
+            height: 30px;
+            background-color: var(--secondary-color);
             color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-            font-weight: 600;
-            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+            border-radius: 50%;
+            line-height: 30px;
+            margin-bottom: 8px;
         }
-
-        .file-input-label:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 14px rgba(52, 152, 219, 0.4);
+        
+        .step.active .step-number {
+            background-color: var(--accent-color);
+            transform: scale(1.1);
         }
-
-        .upload-icon {
-            font-size: 1.1rem;
-            margin-right: 6px;
+        
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 25px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background-color: var(--secondary-color);
+            z-index: 1;
         }
-
-        .supported-formats {
-            margin-top: 8px;
-            font-size: 0.8rem;
-            color: #7f8c8d;
-        }
-
-        input[type="file"] {
+        
+        .step:last-child::after {
             display: none;
         }
-
-        .file-list {
-            margin: 1rem 0;
-            padding: 0.6rem;
-            background: #e9ecef;
-            border-radius: 6px;
-            border: 2px dashed #bdc3c7;
-            max-height: 180px;
-            overflow-y: auto;
+        
+        .app-content {
+            display: flex;
+            min-height: 600px;
         }
-
+        
+        .input-panel {
+            flex: 1;
+            padding: 25px;
+            border-right: 1px solid #eee;
+            background-color: #fafafa;
+        }
+        
+        .output-panel {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--secondary-color);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: rgba(52, 152, 219, 0.05);
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover, .upload-area.dragover {
+            background-color: rgba(52, 152, 219, 0.1);
+            border-color: var(--accent-color);
+        }
+        
+        .upload-area i {
+            font-size: 3rem;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-list {
+            margin-top: 15px;
+        }
+        
         .file-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px;
-            margin: 5px 0;
-            background: white;
-            border-radius: 5px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            font-size: 0.85rem;
+            padding: 10px 15px;
+            background-color: white;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
-
+        
         .file-name {
+            flex: 1;
             font-weight: 500;
         }
-
+        
         .file-size {
             color: #7f8c8d;
-            font-size: 0.75rem;
+            margin: 0 15px;
         }
-
-        .status-message {
-            padding: 10px;
-            margin: 0.8rem 0;
-            border-radius: 6px;
-            text-align: center;
-            font-weight: 500;
-            font-size: 0.85rem;
-        }
-
-        .status-info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-
-        .status-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .status-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .status-processing {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-
-        .status-warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-
-        button {
-            padding: 8px 14px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            margin: 3px;
-        }
-
-        .process-button {
-            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-            color: white;
-            width: 100%;
-            padding: 10px;
-            font-size: 0.9rem;
-        }
-
-        .process-button:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-        }
-
-        .process-button:not(:disabled):hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(46, 204, 113, 0.4);
-        }
-
-        .action-buttons {
+        
+        .file-actions {
             display: flex;
-            gap: 6px;
-            margin-top: 0.8rem;
-            flex-wrap: wrap;
+            gap: 8px;
         }
-
-        #generateChothaBtn {
-            background: #e74c3c;
-            color: white;
-        }
-
-        #clearAllBtn {
-            background: #95a5a6;
-            color: white;
-        }
-
-        #downloadTextBtn {
-            background: #9b59b6;
-            color: white;
-        }
-
-        #downloadPdfBtn {
-            background: #e67e22;
-            color: white;
-        }
-
-        #downloadWordBtn {
-            background: #3498db;
-            color: white;
-        }
-
-        button:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
-        #extractedContent {
-            width: 100%;
-            height: 150px;
-            padding: 10px;
-            border: 2px solid #bdc3c7;
-            border-radius: 6px;
-            resize: vertical;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            line-height: 1.3;
-        }
-
-        .chotha-preview {
-            padding: 12px;
-            background: #fff;
-            border-radius: 6px;
-            min-height: 350px;
-            border: 2px dashed #3498db;
-            overflow: auto;
-        }
-
-        .chotha-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(384px, 1fr));
-            gap: 10px;
-            padding: 10px;
-        }
-
-        .chotha-box {
-            width: 384px; /* 4 inches at 96 DPI */
-            height: 384px; /* 4 inches at 96 DPI */
-            border: 1px solid #ccc;
-            padding: 8px;
-            border-radius: 3px;
-            background: #f9f9f9;
-            font-size: 9px;
-            line-height: 1;
-            overflow: hidden;
-            break-inside: avoid;
-            page-break-inside: avoid;
-        }
-
-        .chotha-heading {
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 5px;
-            border-bottom: 1px solid #3498db;
-            padding-bottom: 2px;
-            font-size: 10px;
+        
+        .loading {
             text-align: center;
+            padding: 40px;
+            color: var(--dark-color);
         }
-
-        .chotha-subheading {
-            text-decoration: underline;
-            font-weight: bold;
-            margin-top: 4px;
-            margin-bottom: 2px;
-            font-size: 9px;
+        
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+            animation: spin 1.5s linear infinite;
         }
-
-        .chotha-content {
-            margin-bottom: 4px;
-            font-size: 8px;
-        }
-
-        .chotha-keyword {
-            font-weight: bold;
-            color: #e74c3c;
-        }
-
-        .chotha-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3px;
-            margin-top: 5px;
-        }
-
-        .chotha-grid-item {
-            font-size: 8px;
-            padding: 2px;
-            background: #f0f0f0;
-            border-radius: 2px;
-        }
-
-        .option-group {
-            margin: 10px 0;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .option-item {
-            display: flex;
-            align-items: center;
-            font-size: 0.85rem;
-        }
-
-        .option-item label {
-            margin-left: 5px;
-        }
-
-        .ocr-progress {
-            margin-top: 10px;
-            width: 100%;
-            background-color: #e9ecef;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-
-        .ocr-progress-bar {
-            height: 10px;
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
-        .ocr-status {
-            font-size: 0.8rem;
-            margin-top: 5px;
-            text-align: center;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                flex-direction: column;
-            }
-            
-            .left-panel, .right-panel {
-                min-width: 100%;
-            }
-            
-            h1 {
-                font-size: 1.6rem;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            button {
-                width: 100%;
-                margin: 3px 0;
-            }
-            
-            .chotha-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .chotha-box {
-                width: 100%;
-                max-width: 384px;
-                height: auto;
-                min-height: 384px;
-            }
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 6px;
-        }
-
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        
+        .chotha-title {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 15px;
+        }
+        
+        .chotha-section {
+            margin-bottom: 2rem;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .chotha-heading {
+            font-weight: bold;
+            font-size: 1.4rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--accent-color);
+            padding-left: 15px;
+        }
+        
+        .chotha-subheading {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+            margin: 15px 0 10px;
+        }
+        
+        .chotha-content {
+            padding-left: 20px;
+        }
+        
+        .chotha-content p {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+        
+        .definition-list {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--secondary-color);
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .definition-item {
+            margin-bottom: 10px;
+        }
+        
+        .definition-term {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .example-list {
+            background-color: #e8f4fc;
+            border-left: 4px solid var(--secondary-color);
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .example-item {
+            margin-bottom: 8px;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .example-item:before {
+            content: "•";
+            color: var(--secondary-color);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin: 20px 0;
+        }
+        
+        .column {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        
+        .save-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            align-items: center;
+        }
+        
+        .save-form input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        
+        .download-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            background-color: var(--success-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.error {
+            background-color: var(--danger-color);
+        }
+        
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            border-bottom-color: var(--secondary-color);
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px 0;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @media (max-width: 900px) {
+            .app-content {
+                flex-direction: column;
+            }
+            
+            .input-panel {
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+            
+            .workflow-steps {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .step::after {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Chotha Generator</h1>
-            <p class="subtitle">Create ultra-compact, palm-sized revision sheets</p>
+            <h1><i class="fas fa-seedling"></i> Chotha Maker</h1>
+            <p>Transform lengthy content into concise, organized summaries</p>
         </header>
         
-        <div class="main-content">
-            <div class="left-panel">
-                <div class="panel">
-                    <h2>Upload Documents</h2>
+        <div class="workflow-steps">
+            <div class="step active">
+                <div class="step-number">1</div>
+                <div class="step-title">Upload</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-title">Process</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-title">Generate</div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-title">Download</div>
+            </div>
+        </div>
+        
+        <div class="app-content">
+            <div class="input-panel">
+                <div class="tab-container">
+                    <div class="tabs">
+                        <div class="tab active" data-tab="upload">Upload File</div>
+                        <div class="tab" data-tab="paste">Paste Text</div>
+                    </div>
                     
-                    <div class="file-input-container">
-                        <label for="fileInput" class="file-input-label">
-                            <span class="upload-icon">📁</span>
-                            Select Files
-                        </label>
-                        <input type="file" id="fileInput" multiple>
-                        <div class="supported-formats">
-                            PDF, Word, Excel, Text, PowerPoint, Images (JPG, PNG)
+                    <div class="tab-content active" id="upload-tab">
+                        <div class="upload-area" id="dropZone">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <h3>Drop your file here</h3>
+                            <p>or</p>
+                            <button class="btn" onclick="document.getElementById('fileInput').click()">
+                                <i class="fas fa-file-upload"></i> Select File
+                            </button>
+                            <input type="file" id="fileInput" class="file-input" accept=".txt,.pdf,.docx,.csv" onchange="handleFileSelect(event)">
+                        </div>
+                        
+                        <div class="file-list" id="fileList">
+                            <!-- Files will be listed here -->
                         </div>
                     </div>
                     
-                    <div id="fileList" class="file-list"></div>
-                    
-                    <div id="uploadStatus" class="status-message">
-                        Select files to begin processing
-                    </div>
-
-                    <div id="ocrProgress" class="ocr-progress" style="display: none;">
-                        <div id="ocrProgressBar" class="ocr-progress-bar"></div>
-                    </div>
-                    <div id="ocrStatus" class="ocr-status"></div>
-                    
-                    <button id="processBtn" class="process-button" disabled>
-                        Process Documents
-                    </button>
-                </div>
-                
-                <div class="panel">
-                    <h2>Content Options</h2>
-                    <div class="option-group">
-                        <div class="option-item">
-                            <input type="checkbox" id="removeStopwords" checked>
-                            <label for="removeStopwords">Remove common words</label>
+                    <div class="tab-content" id="paste-tab">
+                        <div class="form-group">
+                            <label for="rawText"><i class="fas fa-pencil-alt"></i> Paste your content:</label>
+                            <textarea id="rawText" placeholder="Paste your lecture notes, article, or any lengthy text here..."></textarea>
                         </div>
-                        <div class="option-item">
-                            <input type="checkbox" id="extractKeywords" checked>
-                            <label for="extractKeywords">Extract keywords</label>
-                        </div>
-                        <div class="option-item">
-                            <input type="checkbox" id="summarizeContent" checked>
-                            <label for="summarizeContent">Summarize content</label>
-                        </div>
-                        <div class="option-item">
-                            <input type="checkbox" id="useOCR" checked>
-                            <label for="useOCR">Use OCR when needed</label>
+                        
+                        <button class="btn" onclick="processText()">
+                            <i class="fas fa-cogs"></i> Process Text
+                        </button>
+                        
+                        <div class="btn-group">
+                            <button class="btn btn-warning" onclick="clearText()">
+                                <i class="fas fa-broom"></i> Clear
+                            </button>
+                            <button class="btn btn-danger" onclick="loadSample()">
+                                <i class="fas fa-vial"></i> Load Sample
+                            </button>
                         </div>
                     </div>
-                    
-                    <div class="action-buttons">
-                        <button id="generateChothaBtn">Generate Chotha</button>
-                        <button id="clearAllBtn">Clear All</button>
-                        <button id="downloadTextBtn">Download Text</button>
-                        <button id="downloadPdfBtn">Download PDF</button>
-                        <button id="downloadWordBtn">Download Word</button>
-                    </div>
-                </div>
-                
-                <div class="panel">
-                    <h2>Extracted Content</h2>
-                    <textarea id="extractedContent" readonly placeholder="Content extracted from your documents will appear here..."></textarea>
                 </div>
             </div>
             
-            <div class="right-panel">
-                <div class="panel">
-                    <h2>Chotha Preview <small>(4×4 inch boxes)</small></h2>
-                    <div id="chothaPreview" class="chotha-preview">
-                        <p>Chotha content will appear here after processing. This will be an ultra-compact revision sheet with 4×4 inch boxes, minimal spacing, and optimized content.</p>
-                    </div>
+            <div class="output-panel" id="chothaOutput">
+                <div class="loading">
+                    <i class="fas fa-cog fa-spin"></i>
+                    <p>Your chotha will appear here after processing</p>
                 </div>
             </div>
         </div>
     </div>
+    
+    <div class="notification" id="notification"></div>
 
     <script>
-        // DOM elements
-        const fileInput = document.getElementById('fileInput');
-        const fileList = document.getElementById('fileList');
-        const uploadStatus = document.getElementById('uploadStatus');
-        const processBtn = document.getElementById('processBtn');
-        const extractedContent = document.getElementById('extractedContent');
-        const generateChothaBtn = document.getElementById('generateChothaBtn');
-        const clearAllBtn = document.getElementById('clearAllBtn');
-        const downloadTextBtn = document.getElementById('downloadTextBtn');
-        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
-        const downloadWordBtn = document.getElementById('downloadWordBtn');
-        const chothaPreview = document.getElementById('chothaPreview');
-        const removeStopwords = document.getElementById('removeStopwords');
-        const extractKeywords = document.getElementById('extractKeywords');
-        const summarizeContent = document.getElementById('summarizeContent');
-        const useOCR = document.getElementById('useOCR');
-        const ocrProgress = document.getElementById('ocrProgress');
-        const ocrProgressBar = document.getElementById('ocrProgressBar');
-        const ocrStatus = document.getElementById('ocrStatus');
-
-        // Store uploaded files and their content
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+        
+        let currentChothaId = null;
+        let currentFile = null;
         let uploadedFiles = [];
-        let extractedText = '';
-        let chothaContent = '';
-
-        // Initialize PDF.js worker
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-
-        // Common stopwords to remove
-        const stopwords = new Set([
-            'a', 'an', 'and', 'are', 'as', 'at', 'be', 'but', 'by', 'for', 'if', 'in', 
-            'into', 'is', 'it', 'no', 'not', 'of', 'on', 'or', 'such', 'that', 'the', 
-            'their', 'then', 'there', 'these', 'they', 'this', 'to', 'was', 'will', 'with',
-            'which', 'what', 'when', 'where', 'who', 'whom', 'why', 'how', 'many', 'much'
-        ]);
-
-        // File input change handler
-        fileInput.addEventListener('change', handleFileSelection);
-
-        // Process button click handler
-        processBtn.addEventListener('click', processAllFiles);
-
-        // Generate Chotha button click handler
-        generateChothaBtn.addEventListener('click', generateChotha);
-
-        // Clear all button click handler
-        clearAllBtn.addEventListener('click', clearAll);
-
-        // Download text button click handler
-        downloadTextBtn.addEventListener('click', downloadText);
-
-        // Download PDF button click handler
-        downloadPdfBtn.addEventListener('click', downloadPdf);
-
-        // Download Word button click handler
-        downloadWordBtn.addEventListener('click', downloadWord);
-
-        // Handle file selection
-        function handleFileSelection(event) {
-            const files = Array.from(event.target.files);
-            if (files.length === 0) return;
-            
-            uploadedFiles = files;
-            updateFileList();
-            updateUploadStatus('ready');
-        }
-
-        // Update file list display
-        function updateFileList() {
-            fileList.innerHTML = '';
-            
-            uploadedFiles.forEach((file, index) => {
-                const fileItem = document.createElement('div');
-                fileItem.className = 'file-item';
-                fileItem.innerHTML = `
-                    <div>
-                        <span class="file-name">${file.name}</span>
-                        <span class="file-size">(${formatFileSize(file.size)})</span>
-                    </div>
-                    <span class="file-type">${getFileType(file.name)}</span>
-                `;
-                fileList.appendChild(fileItem);
-            });
-            
-            processBtn.disabled = uploadedFiles.length === 0;
-        }
-
-        // Update status message
-        function updateUploadStatus(status, message = '') {
-            uploadStatus.className = 'status-message';
-            
-            switch(status) {
-                case 'ready':
-                    uploadStatus.className += ' status-info';
-                    uploadStatus.innerHTML = `Ready to process ${uploadedFiles.length} file(s)`;
-                    break;
-                case 'processing':
-                    uploadStatus.className += ' status-processing';
-                    uploadStatus.innerHTML = `<span class="loading-spinner"></span> Processing files...`;
-                    break;
-                case 'success':
-                    uploadStatus.className += ' status-success';
-                    uploadStatus.innerHTML = message || 'Files processed successfully!';
-                    break;
-                case 'error':
-                    uploadStatus.className += ' status-error';
-                    uploadStatus.innerHTML = message || 'Error processing files. Please try again.';
-                    break;
-                case 'warning':
-                    uploadStatus.className += ' status-warning';
-                    uploadStatus.innerHTML = message || 'Warning: Some files may not have been fully processed.';
-                    break;
-                default:
-                    uploadStatus.innerHTML = 'Select files to begin processing';
-            }
-        }
-
-        // Process all uploaded files
-        async function processAllFiles() {
-            if (uploadedFiles.length === 0) return;
-            
-            updateUploadStatus('processing');
-            extractedText = '';
-            
-            try {
-                for (const file of uploadedFiles) {
-                    const content = await extractContentFromFile(file);
-                    extractedText += `=== ${file.name} ===\n\n${content}\n\n`;
-                }
+        
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 
-                extractedContent.value = extractedText;
-                updateUploadStatus('success', `Successfully processed ${uploadedFiles.length} file(s)`);
-            } catch (error) {
-                console.error('Error processing files:', error);
-                updateUploadStatus('error', `Error: ${error.message}`);
+                tab.classList.add('active');
+                document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+            });
+        });
+        
+        // Drag and drop functionality
+        const dropZone = document.getElementById('dropZone');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropZone.classList.add('dragover');
+        }
+        
+        function unhighlight() {
+            dropZone.classList.remove('dragover');
+        }
+        
+        dropZone.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+        
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            handleFiles(files);
+        }
+        
+        function handleFiles(files) {
+            if (files.length > 0) {
+                currentFile = files[0];
+                addFileToList(currentFile);
+                processFile(currentFile);
             }
         }
-
-        // Extract content from different file types
-        async function extractContentFromFile(file) {
-            const extension = file.name.split('.').pop().toLowerCase();
+        
+        function addFileToList(file) {
+            const fileList = document.getElementById('fileList');
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
             
-            try {
-                switch(extension) {
-                    case 'pdf':
-                        return await extractTextFromPDF(file);
-                    case 'doc':
-                    case 'docx':
-                        return await extractTextFromWord(file);
-                    case 'xls':
-                    case 'xlsx':
-                        return await extractTextFromExcel(file);
-                    case 'txt':
-                        return await extractTextFromTextFile(file);
-                    case 'ppt':
-                    case 'pptx':
-                        return await extractTextFromPowerPoint(file);
-                    case 'jpg':
-                    case 'jpeg':
-                    case 'png':
-                    case 'bmp':
-                    case 'tiff':
-                        return await extractTextFromImage(file);
-                    default:
-                        return await extractTextFromTextFile(file);
-                }
-            } catch (error) {
-                throw new Error(`Failed to process ${file.name}: ${error.message}`);
-            }
+            const fileSize = formatFileSize(file.size);
+            
+            fileItem.innerHTML = `
+                <div class="file-name">${file.name}</div>
+                <div class="file-size">${fileSize}</div>
+                <div class="file-actions">
+                    <button class="btn btn-success" onclick="processFile(this)" data-file="${file.name}">
+                        <i class="fas fa-cogs"></i> Process
+                    </button>
+                    <button class="btn btn-danger" onclick="removeFile(this)" data-file="${file.name}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            fileList.appendChild(fileItem);
+            uploadedFiles.push(file);
         }
-
-        // Extract text from PDF files
-        async function extractTextFromPDF(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = async function(event) {
-                    try {
-                        const typedArray = new Uint8Array(event.target.result);
-                        const pdf = await pdfjsLib.getDocument(typedArray).promise;
-                        
-                        let text = '';
-                        let hasText = false;
-                        
-                        for (let i = 1; i <= pdf.numPages; i++) {
-                            const page = await pdf.getPage(i);
-                            const textContent = await page.getTextContent();
-                            
-                            if (textContent.items.length > 0) {
-                                hasText = true;
-                                text += textContent.items.map(item => item.str).join(' ') + '\n';
-                            }
-                        }
-                        
-                        // If no text was extracted and OCR is enabled, try OCR
-                        if (!hasText && useOCR.checked) {
-                            updateUploadStatus('warning', 'No text found in PDF, trying OCR...');
-                            text = await extractTextFromPDFWithOCR(file);
-                        } else if (!hasText) {
-                            throw new Error('No text content found in PDF. Enable OCR to extract text from scanned documents.');
-                        }
-                        
-                        resolve(text);
-                    } catch (error) {
-                        reject(error);
-                    }
-                };
-                reader.onerror = reject;
-                reader.readAsArrayBuffer(file);
-            });
+        
+        function removeFile(button) {
+            const fileName = button.getAttribute('data-file');
+            const fileItem = button.closest('.file-item');
+            fileItem.remove();
+            
+            uploadedFiles = uploadedFiles.filter(file => file.name !== fileName);
         }
-
-        // Extract text from PDF using OCR
-        async function extractTextFromPDFWithOCR(file) {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    const typedArray = new Uint8Array(await file.arrayBuffer());
-                    const pdf = await pdfjsLib.getDocument(typedArray).promise;
-                    
-                    let fullText = '';
-                    
-                    // Show OCR progress
-                    ocrProgress.style.display = 'block';
-                    ocrStatus.textContent = 'Preparing OCR...';
-                    
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        ocrStatus.textContent = `Processing page ${i} of ${pdf.numPages}...`;
-                        
-                        const page = await pdf.getPage(i);
-                        const viewport = page.getViewport({ scale: 1.5 });
-                        
-                        // Create canvas for rendering PDF page
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d');
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-                        
-                        // Render PDF page to canvas
-                        await page.render({
-                            canvasContext: context,
-                            viewport: viewport
-                        }).promise;
-                        
-                        // Convert canvas to image data for OCR
-                        const imageData = canvas.toDataURL('image/png');
-                        
-                        // Perform OCR on the image
-                        const result = await Tesseract.recognize(
-                            imageData,
-                            'eng',
-                            { 
-                                logger: message => {
-                                    if (message.status === 'recognizing text') {
-                                        const progress = Math.round(message.progress * 100);
-                                        ocrProgressBar.style.width = `${progress}%`;
-                                        ocrStatus.textContent = `Processing page ${i} of ${pdf.numPages}: ${progress}%`;
-                                    }
-                                }
-                            }
-                        );
-                        
-                        fullText += result.data.text + '\n\n';
-                    }
-                    
-                    // Hide OCR progress
-                    ocrProgress.style.display = 'none';
-                    ocrStatus.textContent = '';
-                    
-                    resolve(fullText);
-                } catch (error) {
-                    ocrProgress.style.display = 'none';
-                    reject(error);
-                }
-            });
-        }
-
-        // Extract text from image files using OCR
-        async function extractTextFromImage(file) {
-            if (!useOCR.checked) {
-                throw new Error('OCR is disabled. Enable OCR to extract text from images.');
-            }
-            
-            return new Promise(async (resolve, reject) => {
-                try {
-                    // Show OCR progress
-                    ocrProgress.style.display = 'block';
-                    ocrStatus.textContent = 'Processing image with OCR...';
-                    
-                    const result = await Tesseract.recognize(
-                        file,
-                        'eng',
-                        { 
-                            logger: message => {
-                                if (message.status === 'recognizing text') {
-                                    const progress = Math.round(message.progress * 100);
-                                    ocrProgressBar.style.width = `${progress}%`;
-                                    ocrStatus.textContent = `Processing image: ${progress}%`;
-                                }
-                            }
-                        }
-                    );
-                    
-                    // Hide OCR progress
-                    ocrProgress.style.display = 'none';
-                    ocrStatus.textContent = '';
-                    
-                    resolve(result.data.text);
-                } catch (error) {
-                    ocrProgress.style.display = 'none';
-                    reject(error);
-                }
-            });
-        }
-
-        // Extract text from Word documents
-        async function extractTextFromWord(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    resolve("Word document content extraction would require additional libraries. Please use text files for demonstration.");
-                };
-                reader.onerror = reject;
-                reader.readAsText(file);
-            });
-        }
-
-        // Extract text from Excel files
-        async function extractTextFromExcel(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    resolve("Excel content extraction would require additional libraries. Please use text files for demonstration.");
-                };
-                reader.onerror = reject;
-                reader.readAsText(file);
-            });
-        }
-
-        // Extract text from text files
-        async function extractTextFromTextFile(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    resolve(event.target.result);
-                };
-                reader.onerror = reject;
-                reader.readAsText(file);
-            });
-        }
-
-        // Extract text from PowerPoint (basic implementation)
-        async function extractTextFromPowerPoint(file) {
-            return "PowerPoint content extraction would require additional libraries. Please use text files for demonstration.";
-        }
-
-        // Generate Chotha from extracted text
-        function generateChotha() {
-            if (!extractedText.trim()) {
-                alert('Please process documents first!');
-                return;
-            }
-            
-            // Enhanced Chotha generation following all format rules
-            chothaContent = createFormattedChotha(extractedText);
-            chothaPreview.innerHTML = chothaContent;
-        }
-
-        // Create formatted Chotha following all rules
-        function createFormattedChotha(text) {
-            let result = '<div class="chotha-container">';
-            
-            // Split by files
-            const fileSections = text.split(/=== .+ ===/).filter(section => section.trim().length > 0);
-            
-            fileSections.forEach((section, index) => {
-                const fileName = uploadedFiles[index]?.name || `Document ${index + 1}`;
-                
-                // Remove extra whitespace
-                let cleanText = section.replace(/\s+/g, ' ').trim();
-                
-                // Apply options based on user selection
-                if (removeStopwords.checked) {
-                    cleanText = removeCommonWords(cleanText);
-                }
-                
-                // Split content into chunks for each box
-                const sentences = cleanText.split(/[.!?]+/).filter(s => s.trim().length > 10);
-                const boxesNeeded = Math.ceil(sentences.length / 8); // Approximately 8 sentences per box
-                
-                for (let i = 0; i < boxesNeeded; i++) {
-                    result += `<div class="chotha-box">`;
-                    result += `<div class="chotha-heading">${fileName} - Part ${i+1}</div>`;
-                    
-                    // Add content to the box
-                    for (let j = i * 8; j < Math.min((i + 1) * 8, sentences.length); j++) {
-                        result += `<div class="chotha-content">${sentences[j].substring(0, 120)}.</div>`;
-                    }
-                    
-                    // Add example grid for content organization
-                    if (i % 2 === 0) {
-                        result += `<div class="chotha-subheading">Key Concepts:</div>`;
-                        result += `<div class="chotha-grid">`;
-                        result += `<div class="chotha-grid-item">Term 1: Definition</div>`;
-                        result += `<div class="chotha-grid-item">Term 2: Definition</div>`;
-                        result += `<div class="chotha-grid-item">Term 3: Definition</div>`;
-                        result += `<div class="chotha-grid-item">Term 4: Definition</div>`;
-                        result += `</div>`;
-                    }
-                    
-                    result += `</div>`;
-                }
-            });
-            
-            result += '</div>';
-            return result;
-        }
-
-        // Remove common words from text
-        function removeCommonWords(text) {
-            const words = text.split(' ');
-            return words.filter(word => {
-                const cleanWord = word.toLowerCase().replace(/[^\w]/g, '');
-                return !stopwords.has(cleanWord) && cleanWord.length > 2;
-            }).join(' ');
-        }
-
-        // Clear all content
-        function clearAll() {
-            fileInput.value = '';
-            uploadedFiles = [];
-            extractedText = '';
-            extractedContent.value = '';
-            fileList.innerHTML = '';
-            chothaPreview.innerHTML = '<p>Chotha content will appear here after processing. This will be an ultra-compact revision sheet with 4×4 inch boxes, minimal spacing, and optimized content.</p>';
-            updateUploadStatus('default');
-            processBtn.disabled = true;
-            ocrProgress.style.display = 'none';
-            ocrStatus.textContent = '';
-        }
-
-        // Download extracted text
-        function downloadText() {
-            if (!extractedText.trim()) {
-                alert('No content to download!');
-                return;
-            }
-            
-            const blob = new Blob([extractedText], { type: 'text/plain' });
-            saveAs(blob, 'extracted-content.txt');
-        }
-
-        // Download as PDF using jsPDF 
-        function downloadPdf() {
-            if (!chothaContent.trim()) {
-                alert('Please generate Chotha first!');
-                return;
-            }
-            
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            // Add title
-            doc.setFontSize(16);
-            doc.text('Chotha Revision Sheet', 105, 15, { align: 'center' });
-            
-            // Convert HTML content to plain text for PDF
-            const plainText = chothaContent.replace(/<[^>]*>/g, '');
-            
-            // Set smaller font size for compact content
-            doc.setFontSize(8);
-            
-            // Split text into lines that fit the page width
-            const lines = doc.splitTextToSize(plainText, 180);
-            
-            // Add text to PDF
-            let yPosition = 25;
-            const lineHeight = 4;
-            
-            lines.forEach(line => {
-                if (yPosition > 270) { // Check if we need a new page
-                    doc.addPage();
-                    yPosition = 20;
-                }
-                doc.text(line, 10, yPosition);
-                yPosition += lineHeight;
-            });
-            
-            // Save the PDF
-            doc.save('chotha-revision-sheet.pdf');
-        }
-
-        // Download as Word document using docx 
-        function downloadWord() {
-            if (!chothaContent.trim()) {
-                alert('Please generate Chotha first!');
-                return;
-            }
-            
-            try {
-                // Create a new document
-                const doc = new docx.Document();
-                
-                // Add title
-                const title = new docx.Paragraph({
-                    text: "Chotha Revision Sheet",
-                    heading: docx.HeadingLevel.HEADING_1,
-                    alignment: docx.AlignmentType.CENTER
-                });
-                doc.addParagraph(title);
-                
-                // Add content
-                const plainText = chothaContent.replace(/<[^>]*>/g, '');
-                const content = new docx.Paragraph({
-                    text: plainText,
-                    alignment: docx.AlignmentType.LEFT
-                });
-                doc.addParagraph(content);
-                
-                // Generate the document
-                docx.Packer.toBlob(doc).then(blob => {
-                    saveAs(blob, "chotha-revision-sheet.docx");
-                });
-            } catch (error) {
-                console.error('Error generating Word document:', error);
-                alert('Error generating Word document. Please try again.');
-            }
-        }
-
-        // Utility functions
+        
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;
@@ -1055,29 +653,329 @@
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
-
-        function getFileType(filename) {
-            const extension = filename.split('.').pop().toLowerCase();
-            const typeMap = {
-                'pdf': 'PDF Document',
-                'doc': 'Word Document',
-                'docx': 'Word Document',
-                'xls': 'Excel Spreadsheet',
-                'xlsx': 'Excel Spreadsheet',
-                'txt': 'Text File',
-                'ppt': 'PowerPoint',
-                'pptx': 'PowerPoint',
-                'jpg': 'JPEG Image',
-                'jpeg': 'JPEG Image',
-                'png': 'PNG Image',
-                'bmp': 'BMP Image',
-                'tiff': 'TIFF Image'
+        
+        function processFile(file) {
+            const outputDiv = document.getElementById('chothaOutput');
+            outputDiv.innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-cog fa-spin"></i>
+                    <p>Processing ${file.name}...</p>
+                </div>
+            `;
+            
+            setActiveStep(2);
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const content = e.target.result;
+                // Simulate processing delay
+                setTimeout(() => {
+                    generateChotha(content);
+                    setActiveStep(3);
+                }, 1500);
             };
-            return typeMap[extension] || 'Unknown File Type';
+            
+            if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+                reader.readAsText(file);
+            } else if (file.name.endsWith('.csv')) {
+                reader.readAsText(file);
+            } else {
+                showNotification('Unsupported file type. Please upload a TXT or CSV file.', true);
+                outputDiv.innerHTML = `
+                    <div class="loading">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Unsupported file type. Please upload a TXT or CSV file.</p>
+                    </div>
+                `;
+            }
         }
+        
+        function processText() {
+            const rawText = document.getElementById('rawText').value;
+            
+            if (!rawText.trim()) {
+                showNotification('Please enter some text to process', true);
+                return;
+            }
+            
+            setActiveStep(2);
+            generateChotha(rawText);
+            setActiveStep(3);
+        }
+        
+        function generateChotha(rawText) {
+            const outputDiv = document.getElementById('chothaOutput');
+            
+            // Simulate processing
+            outputDiv.innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-cog fa-spin"></i>
+                    <p>Analyzing content and generating chotha...</p>
+                </div>
+            `;
+            
+            // Simulate processing time
+            setTimeout(() => {
+                // Process the text to create a chotha structure
+                const chothaData = createChothaFromText(rawText);
+                currentChothaId = chothaData.id;
+                renderChotha(chothaData);
+                setActiveStep(3);
+            }, 2000);
+        }
+        
+        function createChothaFromText(rawText) {
+            // This is a simplified version of the processing logic
+            // In a real application, this would be much more sophisticated
+            
+            const lines = rawText.split('\n').filter(line => line.trim());
+            const chothaData = {
+                id: 'chotha_' + Date.now(),
+                title: lines[0] || 'Generated Chotha',
+                sections: [],
+                definitions: [],
+                examples: [],
+                classifications: []
+            };
+            
+            let currentSection = { heading: '', content: [] };
+            
+            for (const line of lines) {
+                const trimmedLine = line.trim();
+                
+                // Check for definitions (pattern: term = definition)
+                if (trimmedLine.includes('=')) {
+                    const parts = trimmedLine.split('=');
+                    if (parts.length >= 2) {
+                        chothaData.definitions.push({
+                            term: parts[0].trim(),
+                            definition: parts.slice(1).join('=').trim()
+                        });
+                    }
+                    continue;
+                }
+                
+                // Check for examples
+                if (trimmedLine.toLowerCase().includes('eg.') || trimmedLine.toLowerCase().includes('e.g.')) {
+                    chothaData.examples.push(trimmedLine);
+                    continue;
+                }
+                
+                // Check for headings (all caps or followed by colon)
+                if (trimmedLine === trimmedLine.toUpperCase() && trimmedLine.length > 3 || trimmedLine.endsWith(':')) {
+                    if (currentSection.heading || currentSection.content.length > 0) {
+                        chothaData.sections.push({...currentSection});
+                    }
+                    currentSection = {
+                        heading: trimmedLine.endsWith(':') ? trimmedLine.slice(0, -1) : trimmedLine,
+                        content: []
+                    };
+                } else if (trimmedLine) {
+                    currentSection.content.push(trimmedLine);
+                }
+            }
+            
+            // Add the last section
+            if (currentSection.heading || currentSection.content.length > 0) {
+                chothaData.sections.push({...currentSection});
+            }
+            
+            return chothaData;
+        }
+        
+        function renderChotha(data) {
+            const outputDiv = document.getElementById('chothaOutput');
+            let html = '';
+            
+            // Title
+            html += `<h2 class="chotha-title" contenteditable="true" id="chothaTitle">${data.title || 'Generated Chotha'}</h2>`;
+            
+            // Definitions
+            if (data.definitions && data.definitions.length > 0) {
+                html += `<div class="chotha-section">`;
+                html += `<div class="chotha-heading">Definitions</div>`;
+                html += `<div class="definition-list">`;
+                data.definitions.forEach(item => {
+                    html += `<div class="definition-item">`;
+                    html += `<span class="definition-term">${item.term}</span> = ${item.definition}`;
+                    html += `</div>`;
+                });
+                html += `</div></div>`;
+            }
+            
+            // Examples
+            if (data.examples && data.examples.length > 0) {
+                html += `<div class="chotha-section">`;
+                html += `<div class="chotha-heading">Examples</div>`;
+                html += `<div class="example-list">`;
+                data.examples.forEach(example => {
+                    html += `<div class="example-item">${example}</div>`;
+                });
+                html += `</div></div>`;
+            }
+            
+            // Main sections
+            if (data.sections && data.sections.length > 0) {
+                data.sections.forEach(section => {
+                    if (section.heading || section.content.length > 0) {
+                        html += `<div class="chotha-section">`;
+                        if (section.heading) {
+                            html += `<div class="chotha-heading">${section.heading}</div>`;
+                        }
+                        
+                        if (section.content && section.content.length > 0) {
+                            html += `<div class="chotha-content">`;
+                            section.content.forEach(item => {
+                                html += `<p>${item}</p>`;
+                            });
+                            html += `</div>`;
+                        }
+                        html += `</div>`;
+                    }
+                });
+            }
+            
+            // Download options
+            html += `
+                <div class="download-options">
+                    <button class="btn btn-success" onclick="downloadChotha('pdf')">
+                        <i class="fas fa-file-pdf"></i> Download PDF
+                    </button>
+                    <button class="btn btn-warning" onclick="downloadChotha('txt')">
+                        <i class="fas fa-file-alt"></i> Download Text
+                    </button>
+                </div>
+            `;
+            
+            outputDiv.innerHTML = html;
+            setActiveStep(4);
+        }
+        
+        function downloadChotha(format) {
+            if (!currentChothaId) {
+                showNotification('No chotha to download', true);
+                return;
+            }
+            
+            const title = document.getElementById('chothaTitle').innerText;
+            const chothaContent = document.getElementById('chothaOutput').innerText;
+            
+            if (format === 'pdf') {
+                // Create PDF using jsPDF
+                const doc = new jsPDF();
+                doc.setFontSize(20);
+                doc.text(title, 105, 15, { align: 'center' });
+                doc.setFontSize(12);
+                
+                const lines = doc.splitTextToSize(chothaContent, 180);
+                doc.text(lines, 10, 25);
+                
+                doc.save(`${title.replace(/\s+/g, '_')}_chotha.pdf`);
+                showNotification('PDF downloaded successfully!');
+            } else if (format === 'txt') {
+                // Create text file
+                const blob = new Blob([chothaContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${title.replace(/\s+/g, '_')}_chotha.txt`;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 0);
+                showNotification('Text file downloaded successfully!');
+            }
+        }
+        
+        function setActiveStep(stepNumber) {
+            document.querySelectorAll('.step').forEach((step, index) => {
+                if (index + 1 === stepNumber) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            });
+        }
+        
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = isError ? 'notification error' : 'notification';
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        function clearText() {
+            document.getElementById('rawText').value = '';
+        }
+        
+        function loadSample() {
+            const sampleText = `Fungicides (Lecture-Notes-1)
+Dr. Subrata Dutta
 
-        // Initialize
-        updateUploadStatus('default');
+Chemicals used for controlling the plant diseases caused by fungal organisms (called pathogens) are called fungicides. Chemicals or any toxic substances which directly or indirectly kill or control the parasitic fungi are called fungicides.
+
+Terminology
+i. Fungistat : Some chemicals do not kill the fungal pathogens but only inhibit or arrest the growth of the fungus, such chemicals are known as fungistat and the phenomenon is known as fungistatis.
+
+ii. Antisporulant : Antisporulants are such chemicals that may inhibit the sporulation or spore production of parasitic fungi without affecting their growth.
+
+iii. Antibiotics : The antibiotics are secondary metabolites produced by some actinomycetes, bacteria and fungi with broad spectrum of anti-microbial activity. Antibiotics are low molecular weight compounds of non-ribosomal origin. Antibiotics, on the other hand, can inhibit synthesis of the subcellular processes (cell wall synthesis, intracellular protein production, and DNA and RNA replication). Eg. Penicillin, Streptomycin, Tetracycline, Neomycin etc.
+
+iv. Bacteriocins : Bacteriocins are proteinaceous toxins produced by bacteria to inhibit the growth of similar or closely related bacterial strain(s). Bacteriocins are comparatively high molecular weight molecules of ribosomal origin. The mechanism of bacteriocin on target cells is diverse and is associated with the method of pore formation in the outer cell membrane. Bacteriocins bind to cell walls of sensitive microbes, motive ionic imbalances, and produce pores (Morisset and Frère, 2002). Inorganic ions leak the target cells through the created pores and thereby killing them. Eg. The bacteriocin, Agrocin 84, produced by Agrobacterium radiobacter K84, inhibited the growth of A. tumefaciens.
+
+Characteristics of Ideal Fungicides:
+i. It should have less or low phytotoxicity  
+ii. Stability during storage.  
+iii. Should not be toxic for warm blooded animals, earthworms, beneficial soil microorganisms and non-target organisms  
+iv. Stability during dilution  
+v. It should have high fungotoxic activity and broad spectrum in action  
+vi. Fungicide preparation should be ready for use  
+vii. Should be available easily with affordable costs.  
+viii. Should not be inflammable or explosive  
+ix. Easy to handle and apply.  
+x. It should have high tenacity.  
+xi. It should have high compatibility with other agrochemicals  
+xii. It should be available in different formulations  
+xiii. It should be easily transportable  
+xiv. It should not cause environmental pollution.
+
+Classification of fungicides:
+
+Fungicidal chemicals may be classified in different ways. Broadly speaking, classification is done on the basis of their:
+
+1. Mode of action against fungi
+2. Mobility within the plant
+3. Genera Use
+4. Chemical constitution
+
+1. Classification according to mode of action of fungicides
+
+According to mode of action, fungicides may be classified into 3 groups.
+
+(i) Protectants :
+
+Fungicide which is effective only if applied prior to fungal infection, is called a protectant. They mainly inhibit the reproductive organ of a pathogen. Advantage of these types of fungicides is that as they are protective in nature, they are applied in very low doses and they are creating less hazard to the environment.
+e.g. Sulphur and Dithiocarbamates.
+
+(ii) Curative fungicides or theraputants
+
+Fungicide which is capable of controlling fungus after it has caused infection, and thereby curing the plant is called curative fungicide or therapeutants. It is applied during incubation and when early symptoms are visible. They predominantly act on the vegetative as well as reproductive organs of the pathogens.
+e.g. Metalaxyl, 1,4-Oxathin derivatives and antibiotics like Aureofungin.
+
+(iii) Eradicants
+
+Eradicants are those which remove pathogenic fungi from an infection court (area of the host around a propagating unit of a fungus in which infection could possibly occur). These cure established infection at the site of application. These chemicals eradicate the dormant or active pathogen from the host.
+e.g. Organomercurials, thirum, lime-sulphur, dodine.`;
+            
+            document.getElementById('rawText').value = sampleText;
+        }
     </script>
 </body>
 </html>
